@@ -1,0 +1,8 @@
+content
+*.sh
+templates
+.sass-cache
+.htaccess
+*.xcf
+*.sketch
+*.sh

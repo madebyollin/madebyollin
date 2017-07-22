@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Instrumental Extraction with ConvNets</title>
+    <meta name="description" content="Initial experiments" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul>
+        </header>
+        <main>
+            <a class="project" href="/posts/cnn_acapella_extraction/classicrock/" style="background-image:url('/posts/cnn_acapella_extraction/index.jpg');">
+    <h2>Instrumental Extraction with ConvNets</h2>
+    <div class="posteddate">
+        28 April 2017
+    </div>
+</a>
+<div class="post">
+    <p>As an addendum to <a href="/posts/cnn_acapella_extraction/">this post</a>, here are some tests of <a href="https://github.com/madebyollin/acapellabot">AcapellaBot</a> on extracting instrumentals from classic rock songs.</p>
+    <p>Note that the model was trained for <em>acapella extraction</em>, and trained only on electronic dance music at 128BPM (meaning, it's never heard a guitar before). Given these challenges, the model adapts reasonably well, but the segmentation is still very rough.</p>
+    <p>You can <strong>click on the pictures</strong> to toggle between the generated instrumental and original songs, for easy comparison:</p>
+    <p class="toggle spectrograms" data-filename="fortunate_son" data-title="Creedence Clearwater Revival - Fortunate Son" data-link="https://www.youtube.com/watch?v=ec0XKhAHR5I"></p>
+    <p class="toggle spectrograms" data-filename="jailbreak" data-title="AC/DC - Jailbreak" data-link="https://www.youtube.com/watch?v=TXXO9_3gb3o"></p>
+    <p class="toggle spectrograms" data-filename="breaking_the_law" data-title="Judas Priest - Breaking The Law" data-link="https://www.youtube.com/watch?v=L397TWLwrUU"></p>
+    <p>There's some detailed discussion (with ideas for ways to improve the model) on <a href="https://www.reddit.com/r/MachineLearning/comments/66j2i4/p_isolating_vocals_from_music_with_a_convnet/">/r/machinelearning.</a></p>
+
+
+<script>
+    (() => {
+        var spects = document.querySelectorAll(".toggle.spectrograms");
+        for (var i = 0; i < spects.length; i++) {
+            let spect = spects[i];
+            let filename = spect.dataset.filename;
+            let title = spect.dataset.title;
+            let link = spect.dataset.link;
+            spect.innerHTML = `
+            <strong>${title}:<span class="footnote"><a href="${link}">${link}</a></span></strong>
+            <audio class="standard" controls="" preload>
+            <source src="${filename}_instrumental.mp3">
+            </audio>
+            <img class="standard toggler" src="spectrograms/${filename}_instrumental.jpg" />
+
+            <audio class="alternate" controls="" preload>
+            <source src="${filename}.mp3">
+            </audio>
+            <img class="alternate toggler" src="spectrograms/${filename}.jpg" />`;
+        }
+    })()
+</script>
+<script src="/js/toggle.js"></script>
+<script src="/js/spectrograms.js"></script>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

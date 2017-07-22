@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Acapella Extraction with ConvNets</title>
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <div id="wrapper">
+         <main>
+        <a class="project lightbg" href="../">
+            <h2>V2</h2>
+        </a>
+        <div class="post">
+            <p class="toggle spectrograms" data-filename="no_way_out" data-title="Vicetone - No Way Out ft. Kat Nestel (126bpm)" data-link="https://www.youtube.com/watch?v=nPAX2m32SuU">
+            </p>
+
+            <p class="toggle spectrograms" data-filename="all_goes_wrong" data-title="Chase &amp; Status - All Goes Wrong ft. Tom Grennan (175bpm)" data-link="https://www.youtube.com/watch?v=hkDGGsuVKVo"></p>
+
+            <p class="toggle spectrograms" data-filename="virus" data-title="Martin Garrix &amp; MOTi - Virus (128BPM)" data-link="https://www.youtube.com/watch?v=iXIDtf1wP0g"></p>
+
+            <p class="toggle spectrograms" data-filename="hold_on_and_believe" data-title="Martin Garrix - Hold On &amp; Believe ft. The Federal Empire (128BPM)" data-link="https://www.youtube.com/watch?v=LXFZd_okfUk"></p>
+
+            <p class="toggle spectrograms" data-filename="language" data-title="Porter Robinson - Language ft. Bright Lights (128BPM)" data-link="https://www.youtube.com/watch?v=5LILChvqUo4"></p>
+
+
+            <script>
+                (() => {
+                    var spects = document.querySelectorAll(".toggle.spectrograms");
+                    for (var i = 0; i < spects.length; i++) {
+                        let spect = spects[i];
+                        let filename = spect.dataset.filename;
+                        let title = spect.dataset.title;
+                        let link = spect.dataset.link;
+                        spect.innerHTML =
+                            `
+            <strong>${title}:<span class="footnote"><a href="${link}">${link}</a></span></strong>
+            <audio class="standard" controls="" preload>
+            <source src="audio/${filename}_acapella.mp3">
+            </audio>
+            <img class="standard toggler" src="spectrograms/${filename}_acapella.jpg" />
+
+            <audio class="alternate" controls="" preload>
+            <source src="audio/${filename}.mp3">
+            </audio>
+            <img class="alternate toggler" src="spectrograms/${filename}.jpg" />`;
+                    }
+                })()
+            </script>
+            <script src="/js/toggle.js"></script>
+            <script src="/js/spectrograms.js"></script>
+        </div>
+        </main>
+    </div>
+</body>
+
+</html>

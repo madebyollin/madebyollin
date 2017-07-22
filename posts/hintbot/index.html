@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>HintBot</title>
+    <meta name="description" content="Hinting icons automatically with a neural network" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul>
+        </header>
+        <main>
+            <a class="project lightbg" href="/posts/hintbot" style="background-image:url('/posts/hintbot/index.jpg');">
+    <h2>HintBot</h2>
+    <p>Hinting icons automatically with a neural network</p>
+    <div class="posteddate">
+        05 February 2017
+    </div>
+</a>
+<div class="post">
+    <p>App Icons are designed at large sizes but must look nice at small ones. Icons are usually redrawn ("hinted") by hand at small sizes so that they look sharp:</p>
+<img src="linear_vs_hinted.jpg" />
+<p>I wrote a simple neural network called <a href="https://github.com/madebyollin/hintbot">HintBot</a> that attempts to hint icons automatically!  You can test out a simple version <a href="https://madebyollin.github.io/hintbot/">in your browser</a>.</p>
+
+<h2>State of the Bot</h3>
+<p>HintBot was trained on 150+ icons I've made over the years, sliced into pairs of 32×32 (source) and 16×16 (target) images (about ~4000 slices in total).  For example:</p>
+<img src="slices.png" class="lowres"/>
+<p>Here's how HintBot does on the Finder icon from above (which it's never seen before):</p>
+<img src="hintbot_vs_hinted.jpg" />
+<h2>Problems</h2>
+<p>HintBot is better than the linear downscaling from before (yay!), but it still suffers from several problems.  In particular:</p>
+<ul>
+    <li><strong>HintBot doesn't understand pixel snapping.</strong>  Although HintBot tries to add dark edges to things and sharpen details, it doesn't understand that the edges should be pixel-aligned.</li>
+    <li><strong>HintBot distorts colors.</strong> This is most visible as the colored artifacts in the image above, but also has a subtler incarnation–HintBot will sometimes make things transparent!</li>
+</ul>
+<p>...and here is a (non-exhaustive) list of things I've tried to fix these issues:</p>
+<ul>
+    <li><strong>Switching to HSLA:</strong> I thought this might fix color distortion.  It actually made it much worse, since the <code>H</code> dimension is not continuous (at least when using mean-squared-error)!</li>
+    <li><strong>Data Augmentation:</strong> Getting more image data by transforming existing image data is common practice for computer vision problems.  I tried adding more data through flips/90° rotations of my existing data, but didn't see substantial improvements.</li>
+    <li><strong>More Layers:</strong> More convolutional layers (tested up to ~8) did not appear to bring substantial improvements.</li>
+    <li><strong>Different Filter Sizes:</strong> I thought that switching to 2×2 or 4×4 (rather than standard 3×3) filters might help fix pixel-snapping behavior, but they did not. </li>
+    <li><strong>Reweighting Examples:</strong> Reweighting the slices corresponding to the smallest sizes (the ones which have the strongest hinting) introduced new distortions.</li>
+    <li><strong>Different Activation Functions:</strong> Different activation functions (<code>elu</code> and <code>linear</code>) did not appear to resolve these issues.</li>
+</ul>
+<h2>Possible Improvements</h3>
+<p>I'd like to try out the following modifications in future iterations of HintBot:</p>
+<ul>
+    <li><strong>More Data:</strong> There are a few other sources of icon data that I can use–this will require some adjustments to the pre-processing script, but should otherwise be straightforward!</li>
+    <li><strong>Tailored Loss Functions:</strong> Writing a loss function that penalizes hue distance (or alpha-channel inaccuracies) more strongly could help resolve color distortion.</li>
+    <li><strong>Switching to GANs:</strong> HintBot uses a standard convolutional network, but the most impressive image filtering I've seen has been <a href="https://github.com/phillipi/pix2pix">Pix2Pix</a>, which uses conditional GANs.  They seem like overkill for this sort of project (since GANs are generally used for problems for which the output is largely underspecified), but would likely be more flexible.</li>
+</ul>
+
+<hr>
+<p>HintBot is still very much a work in progress–if you have questions (or suggestions to fix the problems outlined above), contact me on <a href="https://twitter.com/madebyollin">Twitter!</a></p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

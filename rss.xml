@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+
+<channel>
+<title>Made by Ollin</title>
+<link>http://www.madebyollin.com/</link>
+<language>en</language>
+
+<item>
+<title>Acapella Extraction with ConvNets</title>
+<guid isPermaLink="true">http://madebyollin.com/posts/cnn_acapella_extraction</guid>
+<link>http://madebyollin.com/posts/cnn_acapella_extraction</link>
+<pubDate>Tue, 18 Apr 2017 10:36:31 -0700</pubDate>
+<description>A working prototype</description>
+</item>
+<item>
+<title>Singing Style Transfer</title>
+<guid isPermaLink="true">http://madebyollin.com/posts/singing_style_transfer</guid>
+<link>http://madebyollin.com/posts/singing_style_transfer</link>
+<pubDate>Tue, 21 Mar 2017 18:59:25 -0700</pubDate>
+<description>Initial Experiments</description>
+</item>
+<item>
+<title>HintBot</title>
+<guid isPermaLink="true">http://madebyollin.com/posts/hintbot</guid>
+<link>http://madebyollin.com/posts/hintbot</link>
+<pubDate>Sun, 05 Feb 2017 21:52:06 -0800</pubDate>
+<description>Hinting icons automatically with a neural network</description>
+</item>
+<item>
+<title>Mac Replacement Icons</title>
+<guid isPermaLink="true">http://madebyollin.com/posts/mri</guid>
+<link>http://madebyollin.com/posts/mri</link>
+<pubDate>Sat, 14 Jan 2017 13:38:46 -0800</pubDate>
+<description>A standardized, simplified, and beautiful icon set</description>
+</item>
+<item>
+<title>Emojin</title>
+<guid isPermaLink="true">http://madebyollin.com/posts/emojin</guid>
+<link>http://madebyollin.com/posts/emojin</link>
+<pubDate>Sat, 14 Jan 2017 13:38:46 -0800</pubDate>
+<description>An infinite kaomoji generator</description>
+</item>
+
+</channel>
+</rss>

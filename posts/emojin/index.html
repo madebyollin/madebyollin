@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Emojin</title>
+    <meta name="description" content="An infinite kaomoji generator" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul>
+        </header>
+        <main>
+            <a class="project lightbg" href="/posts/emojin" style="background-image:url('/posts/emojin/index.jpg');">
+    <h2>Emojin</h2>
+    <p>An infinite kaomoji generator</p>
+    <div class="posteddate">
+        14 January 2017
+    </div>
+</a>
+<div class="post">
+    <p>I made an <a href="http://emojin.xyz/">infinite Kaomoji generator</a> called Emojin.<span class="footnote">Technically it isn't infinite, but there are a lot of permutations!</span></p>
+
+<p>Under the hood, Emojin is defined as a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">Context-Free Grammar</a> made out of unicode characters for heads, faces, eyes, and so on:</p>
+<pre>
+{
+    "kaomoji" : ["head" , "bracketed_head", "symmetrically_armed_head" , "face"],
+    "head" : ["( face )", "[ face ]", "༼ face  ༽"],
+    "bracketed_head": ["left_arm head right_arm"],
+    "symmetrically_armed_head" : ["d( face )b", "(╯ face )╯", "(っ face ς)", "ᕕ( face )ᕗ","(つ face )つ", "ᕦ( face )ᕤ", "(づ face )づ"],
+    "face" : ["^ mouth ^", "• mouth •", "o mouth o", "O mouth O", "> mouth <", "x mouth x", "' mouth '", "; mouth ;", " ̿ mouth  ̿", "- mouth -", "* mouth *", "´ mouth ´", "~ mouth ~", "• mouth <", "> mouth •", "ಠ mouth ಠ", "¬ mouth ¬", "￣ mouth ￣", "ಥ mouth ಥ", "ʘ mouth ʘ", "◎  mouth ◎", "•́ mouth •̀", "T mouth T", "⌒ mouth ⌒", " ˃̶ mouth ˂̶", "ര mouth ര", "⇀ mouth ⇀", "╥ mouth ╥", "´ mouth ´", "˘ mouth ˘", "❛ mouth ❛", "৺ mouth ৺", "୨ mouth ୧", "눈 mouth 눈", "° mouth °", "⌐■ mouth ■", "≖ mouth ≖", "•̀ mouth •́", "◕ mouth ◕", "⊙ mouth ☉", "ᗒ mouth ᗕ", " ͒  mouth ͒  ", "´･ mouth ･`"],
+    "mouth" : ["_", ".", "__", "д", "ω", "-", ",", "////", "皿", "益", "人", "﹏", "ㅿ", "□", "ʖ", "ᴗ", "ㅂ", "▂", "ᴥ", "〜", "∀", "ﾛ", "▿▿▿▿", "ヮ", "ڡ", "︿", "‸", "ϖ", "˫", "֊", "෴", "³", "ᗣ"],
+    "left_arm" : ["\\", "c", "┗", "ヽ", "〜", "┌", "ヾ", "＼"],
+    "right_arm" : ["/", "7", "~", "┛", "ﾉ", "〜", "┘", "⊃", "ง", "ゞ", "ﾉ*:･ﾟ✧", "乂 head ﾉ", "❤ head", "و"]
+}
+</pre>
+<p>The script starts with the single token <code>"kaomoji"</code>, and replaces tokens with values sampled from the object above until there are no more tokens left to replace.</p>
+
+<p>Although the page is set up to generate kaomoji, the CFG parser is entirely general. That means that (with a modification to the above grammar specification), it could generate any context-free language, even something as complex as <a href="http://thatsmathematics.com/mathgen/">MathGen</a>!</p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

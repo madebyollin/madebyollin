@@ -1,0 +1,2 @@
+ErrorDocument 404 /index.html
+Redirect 301 /gallery.html http://macreplacementicons.com/

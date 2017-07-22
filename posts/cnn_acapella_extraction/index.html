@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Acapella Extraction with ConvNets</title>
+    <meta name="description" content="A working prototype" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul>
+        </header>
+        <main>
+            <a class="project" href="/posts/cnn_acapella_extraction" style="background-image:url('/posts/cnn_acapella_extraction/index.jpg');">
+    <h2>Acapella Extraction with ConvNets</h2>
+    <p>A working prototype</p>
+    <div class="posteddate">
+        18 April 2017
+    </div>
+</a>
+<div class="post">
+    <p>I'm working on a system to extract isolated vocals from music.  The code is <a href="https://github.com/madebyollin/acapellabot">on GitHub.</a></p>
+
+<p>Here's an example of what it produces (click on the picture to toggle with the original song):</p>
+<p class="toggle spectrograms" data-filename="no_way_out" data-title="Vicetone - No Way Out ft. Kat Nestel (126bpm)" data-link="https://www.youtube.com/watch?v=nPAX2m32SuU">
+</p>
+
+<p>This post provides a quick overview of the project so far; skip ahead if you want to hear <a href="#results">more results!</a></p>
+
+<h2 id="the_point">What's the point?</h2>
+
+<p>Acapellas<span class="footnote"><code>s/acapella/<a href="http://grammarist.com/spelling/a-cappella/">a cappella</a>/g</code> for proper spelling</span> are usually <strong>a)</strong> hard to find or <strong>b)</strong> nonexistent, but they're essential for making remixes/mashups.  Generating acapellas automatically (even if imperfectly) would <a href="https://www.reddit.com/r/SongStems/search?q=request+acapella&restrict_sr=on&sort=relevance&t=month">help a lot of people.</a></p>
+
+<h2 id="methodology">How does it work?</h2>
+
+<p>Broadly speaking, like this<span class="footnote">Only showing the conv, input, and output layers</span>:</p>
+<img src="how_it_works.png"/>
+
+<p>Since I'm using <a href="https://keras.io/">Keras</a>, the code for the ConvNet in the middle is <em>almost</em> as high-level as the picture above:</p>
+<pre>
+mashup <span class="token operator">=</span> <span class="token function">Input</span><span class="token punctuation">(</span>shape<span class="token operator">=</span><span class="token punctuation">(</span>None<span class="token punctuation">,</span> None<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">,</span> name<span class="token operator">=</span><span class="token string">'input'</span><span class="token punctuation">)</span>
+convA <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>mashup<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> strides<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">,</span> use_bias<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">(</span>convA<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">BatchNormalization</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+
+convB <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> strides<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">,</span> use_bias<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">(</span>convB<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">BatchNormalization</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">,</span> use_bias<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">BatchNormalization</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">UpSampling2D</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+
+conv <span class="token operator">=</span> <span class="token function">Concatenate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">[</span>conv<span class="token punctuation">,</span> convB<span class="token punctuation">]</span><span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">,</span> use_bias<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">BatchNormalization</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">UpSampling2D</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+
+conv <span class="token operator">=</span> <span class="token function">Concatenate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">[</span>conv<span class="token punctuation">,</span> convA<span class="token punctuation">]</span><span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+conv <span class="token operator">=</span> <span class="token function">Conv2D</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> activation<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">,</span> padding<span class="token operator">=</span><span class="token string">'same'</span><span class="token punctuation">)</span><span class="token punctuation">(</span>conv<span class="token punctuation">)</span>
+acapella <span class="token operator">=</span> conv
+</pre>
+
+<p>
+The <code>spectrogram <-> audio</code> portions are handled by <a href="https://librosa.github.io/">librosa</a>.
+</p>
+
+<p>The training data is dynamically generated by mashing up combinations from a set of acapellas and instrumentals.  This is almost as good as finding acapella/song pairs individually, but provides much more data per unit time invested.</p>
+<p>The training data I've used in the current model is standardized at a tempo of 128BPM, and contains a mix of male and female vocals.</p>
+
+<p>The model was trained using Adam with mean-squared error loss.</p>
+
+<h2 id="results">Results</h2>
+
+<p>Here's how the current model works on some songs it's never heard before (again, click on the pictures while playing to toggle back and forth with the unfiltered audio).  Also note that the model has been trained on 128BPM tracks only (some of these examples are at different tempos).
+I think that a better model architecture should be able to resolve many of the issues noted below.</a></p>
+
+<p class="toggle spectrograms" data-filename="all_goes_wrong" data-title="Chase &amp; Status - All Goes Wrong ft. Tom Grennan (175bpm)" data-link="https://www.youtube.com/watch?v=hkDGGsuVKVo"></p>
+
+<p>The model does very well at filtering out the chords and muted kick from the intro (until 0:42), but only recognizes a few frequencies during the drop (when there are more instruments playing).  One model improvement that might help here is adding <a href="http://www.virtualdub.org/blog/pivot/entry.php?id=102">center-channel isolation</a> as a pre-processing step, since songs usually have vocals in the center and instruments in stereo.</p>
+
+<p class="toggle spectrograms" data-filename="virus" data-title="Martin Garrix &amp; MOTi - Virus (128BPM)" data-link="https://www.youtube.com/watch?v=iXIDtf1wP0g"></p>
+
+<p>Performance here is similar–the model can identify "high-contrast" vocals fine (until 0:15), but cuts aggressively when there are many instruments playing in the same frequency range.</p>
+
+<p class="toggle spectrograms" data-filename="hold_on_and_believe" data-title="Martin Garrix - Hold On &amp; Believe ft. The Federal Empire (128BPM)" data-link="https://www.youtube.com/watch?v=LXFZd_okfUk"></p>
+
+<p>This song highlights an additional weakness of the model–it often thinks that clicks or snares (for example at 0:45) are vocal sounds.  This could potentially be resolved by increasing the receptive field of the network; right now, filtering decisions only take into account local information, but global information (like whether or not other regions in the same timestep got filtered) would be useful!</p>
+
+<!-- <p class="toggle spectrograms" data-filename="colors" data-title="Boombox Cartel - Colors ft. Grabbitz (95bpm)" data-link="https://www.youtube.com/watch?v=LXFZd_okfUk"></p>-->
+
+<p class="toggle spectrograms" data-filename="language" data-title="Porter Robinson - Language ft. Bright Lights (128BPM)" data-link="https://www.youtube.com/watch?v=5LILChvqUo4"></p>
+<p>This song highlights a similar issue to the previous one–in this track, the lowest frequencies of the vocals are almost perfectly pitched, with no vibrato, so the network thinks they're instruments!  A larger receptive field may help here as well.</p>
+
+<hr />
+
+<p>In short, the model does well on cases where local information is sufficient to make a decision (and where vocals are reasonably loud).  But real music often includes many more subtle cases, where careful reasoning is required, and the model can't yet handle these.</p>
+
+<h2 id="#improvements">Areas for Improvement:</h2>
+
+<p>I'm still new to working with neural nets (and signal processing), so there are probably many other ways to improve the model besides these.  Nevertheless, here are some improvements that I'm hoping to make once I have the chance:</p>
+
+<ul>
+    <li><strong>'Global' frequency information</strong>: I tested several ways to integrate this into the model and found that my implementations improved loss, but did not result in qualitatively better performance.  I'm not sure if these issues were a result of overfitting or of a poor choice of loss function, so I've left them out of the main codebase for now.</li>
+    <li><strong>A better loss function</strong>: I'm using mean-squared error right now, but experiments with stronger models (which decreased validation error substantially but didn't sound any better) suggest that MSE doesn't correlate very well with actual performance.</li>
+    <li><strong>Stereo information</strong>: right now, the model uses only mono input/output data.  Training on stereo (or mid/side) channels might improve the model's ability to differentiate vocals from other notes in the same frequencies.</li>
+    <li><strong>Better Time-frequency Transforms</strong>: I'm currently using a Short-time Fourier transform (STFT) to process the input data, with 1536-step windows, but it's not clear that this is actually the best choice.  Switching to a <a href="https://github.com/librosa/librosa/issues/165">constant-q transform</a> or a dynamic q transform (as used by <a href="https://www.lunaverus.com/cnn">AnthemScore</a>) will probably make the model's job easier.</li>
+</ul>
+
+<p>Other suggestions or advice are appreciated (mention on <a href="https://twitter.com/madebyollin">Twitter</a>), and you're welcome to <a href="https://github.com/madebyollin/acapellabot">experiment with the code and trained model</a> I've posted.</p>
+
+<p>As a final note, I wouldn't have been able to do any of this without the GTX 1060 GPUs generously made available to students by <a href="https://www.cs.washington.edu/lab/about">UW CSE</a>.</p>
+
+<script>
+    (() => {
+        var spects = document.querySelectorAll(".toggle.spectrograms");
+        for (var i = 0; i < spects.length; i++) {
+            let spect = spects[i];
+            let filename = spect.dataset.filename;
+            let title = spect.dataset.title;
+            let link = spect.dataset.link;
+            spect.innerHTML = `
+            <strong>${title}:<span class="footnote"><a href="${link}">${link}</a></span></strong>
+            <audio class="standard" controls="" preload>
+            <source src="${filename}_acapella.mp3">
+            </audio>
+            <img class="standard toggler" src="spectrograms/${filename}_acapella.jpg" />
+
+            <audio class="alternate" controls="" preload>
+            <source src="${filename}.mp3">
+            </audio>
+            <img class="alternate toggler" src="spectrograms/${filename}.jpg" />`;
+        }
+    })()
+</script>
+<script src="/js/toggle.js"></script>
+<script src="/js/spectrograms.js"></script>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Singing Style Transfer</title>
+    <meta name="description" content="Initial Experiments" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul>
+        </header>
+        <main>
+            <a class="project lightbg" href="/posts/singing_style_transfer" style="background-image:url('');">
+    <h2>Singing Style Transfer</h2>
+    <p>Initial Experiments</p>
+    <div class="posteddate">
+        21 March 2017
+    </div>
+</a>
+<div class="post">
+    <p>I'm curious if the <a href="https://arxiv.org/pdf/1607.08022.pdf">impressive results</a> for <a href="https://arxiv.org/pdf/1703.00848.pdf">style transfer on images</a> can be applied to audio spectrograms to produce compelling singing transfer.</p>
+<p>I've started with the case of stylizing an <strong>acapella cover</strong> to match the <strong>original vocal.</strong>  This case is "simple" because the phonemes are identical in both the content and style audio.  The pair I'm testing with is below; the original acapella (and a cover) of <em>One Last Time</em> by Ariana Grande:</p>
+
+<p>
+<strong>Style Acapella (Original Vocal):</strong><span class="footnote"><a href="https://www.youtube.com/watch?v=BPgEgaPk62M">One Last Time</a> by Ariana Grande. This acapella's tempo is slightly different from the original, but that shouldn't matter.</span>
+<audio controls="">
+<source src="one_last_time_original_30s.mp3">
+</audio>
+<img src="one_last_time_original_30s.mp3.png" />
+</p>
+
+<p>
+<strong>Content Acapella (Acapella Cover):</strong><span class="footnote"><a href="https://www.youtube.com/watch?v=ZTVkJUwEkkY">Cover</a> found on YouTube</span>
+<audio controls="">
+<source src="one_last_time_cover_30s.mp3">
+</audio>
+<img src="one_last_time_cover_30s.mp3.png" />
+</p>
+
+<h2>Attempt 1: Using Ulyanov's Project</h2>
+<p>
+Dmitry Ulyanov and Vadim Lebedev published a post on <a href="https://dmitryulyanov.github.io/audio-texture-synthesis-and-style-transfer/">Audio texture synthesis and style transfer</a> as an experiment.  I've modified their code slightly to make it work on 30s files,<span class="footnote"><a href="audio_style_transfer_modified.py">Here's a link</a> to the modified code.</span> but the algorithm is the same.</p>
+
+<p>Here are the style transfer results (with a few different values for the style weight &alpha;):</p>
+
+<p>
+<strong>Style Transfer (&alpha; = 0.0001 : Too much style 😭):</strong>
+<audio controls="">
+<source src="one_last_time_0.0001.mp3">
+</audio>
+<img src="one_last_time_0.0001.mp3.png" />
+</p>
+
+<p>
+<strong>Style Transfer (&alpha; = 0.001 : Okay 👌):</strong>
+<audio controls="">
+<source src="one_last_time_0.001.mp3">
+</audio>
+<img src="one_last_time_0.001.mp3.png" />
+</p>
+
+<p>
+<strong>Style Transfer (&alpha; = 0.01 : Too much content 😭):</strong>
+<audio controls="">
+<source src="one_last_time_0.01.mp3">
+</audio>
+<img src="one_last_time_0.01.mp3.png" />
+</p>
+
+<p>Although the spectrograms look reasonable, the results don't sound very compelling yet.  I'll log further experiments here as they're performed–if you have any suggestions for research to look at or modifications to try, <a href="https://twitter.com/madebyollin">let me know!</a></p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ollin Boer Bohan</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <script>
+        function redirect(url) {
+            window.location = url;
+        }
+
+        function articleURL(articleID) {
+            var articles = {
+                "replacing_el_capitan_system_icons": "replacing_macos_system_icons",
+            };
+            if (articleID in articles) {
+                articleID = articles[articleID];
+            }
+            return "http://macreplacementicons.com/articles/" + articleID;
+        }
+
+        window.onload = function() {
+            var articleID = window.location.hash.slice(1);
+            redirect(articleURL(articleID));
+        }
+    </script>
+</head>
+
+<body>
+    <main>
+        <p>This page was moved to <a href="http://macreplacementicons.com/articles/">macreplacementicons.com/</a></p>.
+        <p>If you don't have Javascript enabled, please click the link above to go directly.</p>
+    </main>
+    <footer>
+        <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+        <a href="https://www.github.com/madebyollin">GitHub</a>
+    </footer>
+</body>
+
+</html>

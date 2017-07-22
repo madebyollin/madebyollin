@@ -1,2 +1,2 @@
 # madebyollin
-GitHub Pages Site
+GitHub Pages site for personal blog.
