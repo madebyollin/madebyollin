@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>NVIDIA Internship (2017)</title>
+    <meta name="description" content="Notes on my 2017 internship at NVIDIA Redmond." />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <!-- <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul> -->
+        </header>
+        <main>
+            <a class="project" href="/posts/nv2017" style="background-image:url('/posts/nv2017/index.jpg');">
+    <h2>NVIDIA Internship (2017)</h2>
+    <p>Notes on my 2017 internship at NVIDIA Redmond.</p>
+    <div class="posteddate">
+        15 December 2017
+    </div>
+</a>
+<div class="post">
+    <p>
+    In fall 2017, I conducted a 10-week, full-time internship with NVIDIA in Redmond, Washington.
+</p>
+
+<h2>What I Did, Briefly</h2>
+
+<p>I built, tested, and documented-the-creation-process-of a TBS Discovery quadcopter carrying an NVIDIA Jetson TX2, with guidance from NVIDIA’s autonomous mobile robotics team.</p>
+
+<img alt="Drone in flight" src="drone.jpg" width="640" height="360" />
+
+<p>The main components of this project were:</p>
+<ul>
+    <li><strong>Physical Assembly:</strong> Soldering together parts, designing 3d-printable mounts for the Jetson and ZED camera, assembling everything, and making sure that the combined build was flyable (with consideration to weight, balance, power, and RF interference).</li>
+    <li><strong>Software Setup:</strong> Building and testing the ORB_SLAM2 GPU stereo SLAM library on the drone (and making sure it was able to communicate over MAVROS with the PixFalcon flight controller).</li>
+    <li><strong>Documentation:</strong> Preparing photos, diagrams, and lots of written material so that others could replicate the build.</li>
+</ul>
+
+<p>The project was completed in the planned 10-week timeframe, and successfully tested in flight.</p>
+
+<h2>Work: Less Stressful than School</h2>
+
+<img alt="My walk to work" src="walk_to_work.jpg" width="640" height="360" />
+
+<p>My subjective experience was that the internship was less stressful than school, despite consuming about the same amount of weekly time. This was a pleasant surprise.</p>
+<p>Possible reasons why:</p>
+<ul>
+    <li><strong>The number of problems to tackle simultaneously was much smaller.</strong> Although I worked on a lot of different problems during the internship, it was usually straightforward to figure out the most critical issue to work on at any given moment. In contrast, school usually involves 3-5 different sources of problems, each generating new problems at noisy, yet correlated, intervals, with no obvious hierarchy of importance.</li>
+    <li><strong>Temporal and spatial boundaries around work were much stronger.</strong> Work was a place that I could enter and leave, and wasn't allowed to consume more than 8 hours of dedicated time per day.  In contrast, schoolwork demands to be done at all hours, in all places, and there aren't any hard limits on how much of it you can need to do in a given week.</li>
+    <li><strong>Work was driven by outcomes rather than constraints.</strong> Most work problems were some form of outcome driven-problem: "things are like <em>this</em>, but they need to be like <em>that</em>, figure out how to fix it".  Many school problems are more constraint-driven; something like "write something that answers this, using one of the techniques we've covered, without referencing sources other than lecture slides or the textbook, by Tuesday".<br /><br />  School problems do have tangible outcomes, and work problems certainly do have constraints, but my experience has been that outcome driven problems were easier to reason about and more satisfying to complete.</li>
+</ul>
+
+<h2>Lab Notes: A Progress Accumulator</h2>
+<p>One of the things I found invaluable while working on my internship was taking rigorous notes while working through problems.  I'm used to taking notes while working on schoolwork, but was never very careful about it, and it turns out that this makes an important difference.</p>
+
+<p>A rigorous log of your attempts (and outcomes) acts as a progress accumulator. Real-world problems can take a long time to solve, and it's easy to try a lot of things that don't work, get discouraged, and feel like you've gotten nowhere.  Writing down careful experimental results (what exactly did you try, and what exactly was the result?) means that you're still making progress even when your attempts at a solution fail. </p>
+
+<p>Put another way, <em>epsilon</em> incremental progress (gaining a bit of true information from each failed experiment) will accumulate to a solution over finite timesteps, while <em>Bernoulli(epsilon)</em> incremental progress (attempting different methods over and over in the hope that one attempt will be successful) has no such guarantee.</p>
+
+<h2>Acronyms I Had to Look Up While Working</h2>
+<p>In no particular order:</p>
+<ul>
+<li><strong>IMU:</strong> Inertial Measurement Unit; a sensor that measures rates of motion and rotation using accelerometers/gyroscopes.</li>
+<li><strong>EKF:</strong> Extended Kalman Filter; a filter to produce smooth state estimates from noisy sensor data.</li>
+<li><strong>VIO:</strong> Visual-Intertial Odometry; estimation of pose (position + orientation) by combining visual (camera) and IMU sensor data.</li>
+<li><strong>APM/PX4:</strong> Two popular auto-pilot firmwares for mobile robots.</li>
+<li><strong>RPY:</strong> Roll, Pitch, Yaw; Euler rotation angles in that order.</li>
+<li><strong>ENU/NED:</strong> East, North, Up and North, East, Down; two ways of orienting a right-handed coordinate system in physical space.</li>
+<li><strong>PID:</strong> Proportional, Integral, Derivative; a type of control system that corrects errors according to the current error value, its integral, and its derivative.</li>
+<li><strong>TX/RX:</strong> Transmitter/Receiver (for radio control; the 'X' is meaningless padding).</li>
+<li><strong>PPM/PWM:</strong>Pulse Position/Width Modulation; two formats for RC signal transmission.</li>
+<li><strong>M2/M3/M4:</strong> Screw designations (2mm, 3mm, and 4mm thread diameter respectively).</li>
+<li><strong>3S/4S/5S:</strong> LiPo Battery designations (3 cell, 4-cell, and 5-cell; the S means the cells are wired in series).</li>
+<li><strong>FCU:</strong> Flight control unit.</li>
+<li><strong>ESC:</strong> Electronic speed controller.</li>
+<li><strong>PDB:</strong> Power Distribution Board.</li>
+<li><strong>JHH:</strong> Jen-Hsun Huang, CEO of NVIDIA.</li>
+</ul>
+
+<h2>Overall Impressions</h2>
+
+<p>I really enjoyed the project, the specific team I was working with, and the overall NVIDIA work environment.  I look forward to working more on ML/robotics projects in the future!</p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

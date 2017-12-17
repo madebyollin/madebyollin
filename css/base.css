@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css?family=Lato:100,200,300,400,400i,600,600i,700,800");
 * {
   box-sizing: border-box;
@@ -7,7 +8,7 @@
   text-decoration: none;
   font-family: "Lato", "Avenir Next", "Helvetica", sans-serif;
   font-weight: 300;
-  font-size: 16px; }
+  font-size: 18px; }
 
 *::selection {
   background: rgba(45, 169, 251, 0.25); }
@@ -69,7 +70,7 @@ header {
       header .nav a:hover {
         border-bottom: 2px solid currentColor; }
       header .nav a.selected {
-        font-weight: 700; }
+        font-weight: 500; }
         header .nav a.selected:hover {
           color: black;
           border: none; }
@@ -96,15 +97,24 @@ footer {
   max-width: 672px;
   margin: 0 auto;
   text-align: left;
+  border-radius: 8px;
   margin-top: 32px;
   padding: 16px 32px;
   border-left: 2px solid transparent;
-  color: black; }
+  color: black;
+  box-shadow: 0 8px 64px 0 rgba(0, 0, 0, 0);
+  transition: .1s ease all;
+  transition-property: transform; }
   .postsummary:hover {
     color: black; }
   .postsummary > h2 {
     color: inherit;
     font-size: 32px; }
+  .postsummary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 64px 0 rgba(0, 0, 0, 0.1); }
+  .postsummary:active {
+    transform: scale(1); }
   .postsummary.projectsummary {
     border-left-width: 4px;
     background-color: black;
@@ -112,8 +122,6 @@ footer {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover; }
-    .postsummary.projectsummary:hover {
-      border-left: 4px solid #1889f5; }
     .postsummary.projectsummary.lightbg {
       background-color: white;
       color: black; }
@@ -161,8 +169,6 @@ footer {
     color: rgba(0, 0, 0, 0.5); }
     .postsummary > .date::before {
       content: 'Posted '; }
-  .postsummary:hover {
-    border-left: 2px solid black; }
 
 .project {
   margin: 0 auto 0px;
@@ -288,7 +294,7 @@ Formatting in the post itself, for each tag
   text-align: left;
   margin-bottom: 8px;
   color: black;
-  font-weight: 700; }
+  font-weight: 500; }
 
 .post h3 {
   font-size: 1.1em;
@@ -297,7 +303,7 @@ Formatting in the post itself, for each tag
   color: black;
   padding-top: 8px;
   border-top: 1px solid #e8e8e8;
-  font-weight: 700; }
+  font-weight: 500; }
 
 .post h4 {
   font-size: 1em;
@@ -305,14 +311,14 @@ Formatting in the post itself, for each tag
   margin-bottom: 16px;
   color: black;
   padding-top: 8px;
-  font-weight: 700; }
+  font-weight: 500; }
 
 .post .table_header {
   font-size: 1em;
   text-align: center;
   margin-bottom: -16px;
   color: black;
-  font-weight: 700;
+  font-weight: 500;
   background: rgba(192, 192, 192, 0.25);
   padding: 4px;
   border: 1px solid silver;
@@ -348,7 +354,8 @@ Formatting in the post itself, for each tag
   display: block;
   max-width: 672px;
   width: 100%;
-  margin: 16px auto; }
+  margin: 16px auto;
+  border-radius: 8px; }
 
 .post img.w_512 {
   width: 512px;
@@ -362,15 +369,16 @@ Formatting in the post itself, for each tag
   image-rendering: pixelated; }
 
 .post strong {
-  font-weight: 700; }
+  font-weight: 500; }
 
 .post em {
+  font-weight: 300;
   color: inherit; }
 
 .post p {
   text-align: left;
   line-height: 1.5;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   -webkit-hyphens: auto;
   -moz-hyphens: auto;
   hyphens: auto; }
@@ -379,12 +387,13 @@ Formatting in the post itself, for each tag
   color: #1889f5;
   font-family: inherit;
   font-size: inherit;
-  font-weight: 700;
+  font-weight: 500;
   text-align: left;
-  border-bottom: 1px solid; }
+  border-bottom: 1px solid rgba(24, 137, 245, 0.1); }
 
 .post a:hover {
-  color: #0230B2; }
+  color: #0230B2;
+  border-bottom-color: rgba(2, 48, 178, 0.1); }
 
 .post span {
   font-weight: inherit;
@@ -482,12 +491,12 @@ Formatting in the post itself, for each tag
 
 /* ******** Lists ******** */
 .post ul {
-  list-style-type: disc;
+  list-style: none;
   margin-left: 64px;
   color: rgba(0, 0, 0, 0.8); }
 
 .post ol {
-  list-style-type: decimal;
+  list-style: none;
   margin-left: 64px;
   margin-top: -16px;
   margin-bottom: 16px;
@@ -496,8 +505,31 @@ Formatting in the post itself, for each tag
 .post li {
   text-align: left;
   margin-bottom: 16px;
-  line-height: 1.5;
-  color: rgba(0, 0, 0, 0.8); }
+  line-height: 1.5; }
+
+.post ol > li {
+  counter-increment: li; }
+
+.post ol > li::before {
+  content: counter(li) ".";
+  -webkit-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  color: rgba(0, 0, 0, 0.4);
+  text-align: right;
+  direction: rtl;
+  margin-right: 0.5em; }
+
+.post ul > li::before {
+  content: "•";
+  display: block;
+  position: absolute;
+  transform: translateX(-100%);
+  -webkit-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  color: #a0a0a0;
+  padding-right: 0.5em; }
 
 /* ******** Tables ******** */
 .post table {

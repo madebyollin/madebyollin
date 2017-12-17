@@ -1,2 +1,3 @@
 ErrorDocument 404 /index.html
 Redirect 301 /gallery.html http://macreplacementicons.com/
+Redirect 303 /posts/ /index.html
