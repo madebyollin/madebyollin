@@ -100,7 +100,6 @@ footer {
   border-radius: 8px;
   margin-top: 32px;
   padding: 16px 32px;
-  border-left: 2px solid transparent;
   color: black;
   box-shadow: 0 8px 64px 0 rgba(0, 0, 0, 0);
   transition: .1s ease all;
@@ -116,7 +115,6 @@ footer {
   .postsummary:active {
     transform: scale(1); }
   .postsummary.projectsummary {
-    border-left-width: 4px;
     background-color: black;
     color: white;
     background-repeat: no-repeat;
@@ -176,7 +174,7 @@ footer {
   width: 100%;
   background-color: black;
   color: white;
-  height: 256px;
+  min-height: 256px;
   position: relative;
   padding: 64px 2px;
   background-position: center center;
@@ -227,6 +225,7 @@ main {
   background: white;
   text-align: center;
   position: relative;
+  min-width: 992px;
   padding-bottom: 72px; }
   main > h1 {
     font-weight: 100;
@@ -251,6 +250,11 @@ main {
 
 .post * {
   color: black; }
+
+.post .video {
+  margin: 1em 0;
+  border-radius: 4px;
+  overflow: hidden; }
 
 .posttitle {
   display: block;
@@ -289,29 +293,69 @@ Formatting in the post itself, for each tag
   line-height: 1.5; }
 
 /* ******** Headers ******** */
+.post h2, h3, h4 {
+  margin-bottom: 12px;
+  padding: 0;
+  line-height: 1;
+  position: relative; }
+
 .post h2 {
   font-size: 1.5rem;
   text-align: left;
-  margin-bottom: 8px;
+  margin-top: 3rem;
   color: black;
   font-weight: 500; }
 
 .post h3 {
   font-size: 1.1em;
   text-align: left;
-  margin-bottom: 16px;
+  margin-top: 2rem;
   color: black;
-  padding-top: 8px;
-  border-top: 1px solid #e8e8e8;
   font-weight: 500; }
 
 .post h4 {
   font-size: 1em;
   text-align: left;
-  margin-bottom: 16px;
+  margin-top: 0.75rem;
   color: black;
-  padding-top: 8px;
   font-weight: 500; }
+
+.post .outside-heading {
+  display: inline-block;
+  text-align: right;
+  min-width: 96px;
+  position: absolute;
+  line-height: inherit;
+  transform: translateX(-100%);
+  padding-right: 16px;
+  font-size: inherit;
+  font-weight: 300;
+  opacity: 0.5; }
+
+.post .outside-links {
+  font-size: 0.85rem;
+  width: 160px;
+  text-align: left;
+  position: absolute;
+  line-height: inherit;
+  left: 100%;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-weight: 300;
+  hyphens: none; }
+  .post .outside-links a {
+    margin-bottom: 1em; }
+    .post .outside-links a::before {
+      content: "→ ";
+      opacity: 0.5;
+      padding-right: 8px;
+      position: absolute;
+      transform: translateX(-100%); }
+    .post .outside-links a::after {
+      content: "\A";
+      white-space: pre;
+      display: block;
+      margin-bottom: -1em; }
 
 .post .table_header {
   font-size: 1em;
@@ -327,6 +371,37 @@ Formatting in the post itself, for each tag
   border-top-right-radius: 4px; }
 
 /* ******** Various ******** */
+.post .youtube-video {
+  width: 560px;
+  height: 315px;
+  margin-bottom: 24px;
+  display: block;
+  background: black;
+  position: relative;
+  color: transparent;
+  user-select: none;
+  background-size: cover;
+  background-repeat: no-repeat; }
+  .post .youtube-video.activated::before {
+    display: none; }
+  .post .youtube-video::before {
+    content: "▶";
+    color: white;
+    font-size: 3rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: 0.1s ease transform, 0.1s ease color;
+    z-index: 0; }
+  .post .youtube-video:hover::before {
+    transform: translate(-50%, -50%) scale(1.1); }
+  .post .youtube-video:active::before {
+    color: #ddd;
+    transform: translate(-50%, -50%) scale(0.9); }
+  .post .youtube-video iframe {
+    z-index: 10; }
+
 .post audio {
   display: block;
   max-width: 672px;
@@ -401,8 +476,10 @@ Formatting in the post itself, for each tag
 
 .post hr {
   border: 0;
+  height: 0;
   border-top: 1px solid #e8e8e8;
-  margin-bottom: 32px; }
+  margin: 64px auto;
+  width: 50%; }
 
 .post sup {
   color: inherit; }
@@ -528,7 +605,7 @@ Formatting in the post itself, for each tag
   -webkit-user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
-  color: #a0a0a0;
+  color: #606060;
   padding-right: 0.5em; }
 
 /* ******** Tables ******** */
@@ -550,15 +627,13 @@ Formatting in the post itself, for each tag
   width: auto;
   height: auto; }
 
-@media (max-device-width: 640px), (max-width: 640px) {
+@media (max-width: 640px) {
   .project {
-    padding: 32px 2px; }
-
-  .project h2 {
-    font-size: 40px; }
+    padding: 32px 20%; }
 
   header {
-    text-align: center; }
+    text-align: center;
+    height: auto; }
     header .nav {
       float: none;
       text-align: center; }
@@ -590,5 +665,18 @@ Formatting in the post itself, for each tag
   color: #c004b2; }
 .token.function {
   color: #1889f5; }
+
+/*  it works in chrome */
+#self_driving_car_videos h2 {
+  background: black;
+  display: inline;
+  padding: 0.1em 0.5em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone; }
+
+#self_driving_car_videos .date,
+#self_driving_car_videos .posteddate {
+  background: black;
+  border-color: black; }
 
 /*# sourceMappingURL=base.css.map */

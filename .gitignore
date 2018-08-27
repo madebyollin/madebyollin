@@ -5,4 +5,4 @@ templates
 .htaccess
 *.xcf
 *.sketch
-*.sh
+posts/_*
