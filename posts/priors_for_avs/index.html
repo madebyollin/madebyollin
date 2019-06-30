@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Priors for Autonomous Vehicle Development</title>
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <!-- <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul> -->
+        </header>
+        <main>
+            
+<a id="priors_for_avs" class="posttitle" href="/posts/priors_for_avs">
+    <h2>Priors for Autonomous Vehicle Development</h2>
+    <p></p>
+    <div class="posteddate">
+        30 June 2019
+    </div>
+</a>
+<div class="post">
+    <h2>1. AVs must be superhuman just to break even.</h2>
+<p>I'm picturing the matchup like this:</p>
+
+<p><img src="1.jpg" /></p>
+
+<p><strong>AVs will be inferior at:</strong></p>
+<ul>
+    <li><strong>Interpreting Edge Cases</strong>: Andrej Karpathy has a <a href="https://youtu.be/zywIvINSlaI?t=1245">nice compilation of these</a> that should frighten any AV engineer. Sacha Arnoud and Drago Anguelov (Waymo) have <a href="https://youtu.be/LSX3qdy0dFg?t=1870">have</a> <a href="https://youtu.be/Q0nGo2-y0xY?t=349">more</a>.</li>
+    <li><strong>Acting to Reduce Uncertainty</strong>: <a href="https://medium.com/waymo/a-better-view-on-how-our-vehicles-make-a-right-on-turn-on-red-ecdbc72cbd17">Hand-designed recovery rules</a> with <a href="https://youtu.be/zywIvINSlaI?t=1537">machine-learned triggers</a> should be enough to handle most common cases, but not all of them.</li>
+    <li><strong>Self-Improvement</strong>: humans can learn from their failures without needing to upload them to the cloud, wait for an engineer to build a fix, and pull the fix back down over Wi-Fi...</li>
+</ul>
+
+<p><strong>AVs could be superior at:</strong></p>
+<ul>
+    <li><strong>Mapping</strong>: AVs can have centimeter-accurate localization in richly-detailed maps.</li>
+    <li><strong>Surround Perception</strong>: AVs can be watching every direction at once, with multiple sensors, at all times, without getting distracted.</li>
+    <li><strong>Low Latency</strong>: AVs can (in theory) have reaction times in the ones or tens of milliseconds, instead of the thousands.</li>
+</ul>
+
+<h2>2. AVs need to track uncertainty and reduce it over time.</h2>
+
+<p>...because uncertainty is necessary for fault-tolerant intelligence.</p>
+
+<!-- <div id="bayes_filter_demo_wrap"></div> -->
+<!-- if we have js, add a cute demo -->
+<!-- nvm too lazy -->
+<!-- <script src="bayes_filter_demo.js"></script> -->
+
+<p>Any line of code that looks like <code>if (p_x > threshold)</code> (binarizing a confidence estimate) or <code>x = argmax(x_likelihoods)</code> (binarizing a distribution) is going to cause a comical failure eventually.</p>
+
+<p>If you forgo uncertainty at one layer in your perception stack, you're doomed to approximate the uncertainty with temporal smoothing at the next level up; the end result of this approach is a card tower of progressively-worse approximations.</p>
+
+<p>(Corollary: systems that devote all of their energy to good <a href="http://www.cvlibs.net/datasets/kitti/">per-frame results</a> will fare poorly. The real world is not a benchmark, frames are not i.i.d, and it's usually better to run a dumber system at higher framerates with <a href="https://youtu.be/BBw7b4SUlto?t=692">good cross-frame tracking</a>.)</p>
+
+<h2>3. AVs that work anywhere must first work everywhere (cautiously)</h2>
+<p><img src="2.jpg" /></p>
+<p>I am very pessimistic about systems that start by assuming an idealized environment and attempt to special-case for harder ones. Starting with minimal assumptions about the environment is another form of built-in fault tolerance.</p>
+<p>Successful systems will start with a foundation of content-agnostic environment reconstruction (through LIDAR, stereo, SFM/MVS, whatever) + obstacle avoidance, and special-case upwards. <em>If</em> there are line lines, use them as a strong prior for where to drive. <em>If</em> some obstacles are recognizable as cars and pedestrians, use stronger assumptions about how those obstacles will move. <em>If</em> you can recognize an obstacle as a plastic bag or a cloud of exhaust, you can safely run into it. But only then.</p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>
