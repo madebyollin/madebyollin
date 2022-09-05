@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Game Emulation via Neural Network</title>
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <!-- <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul> -->
+        </header>
+        <main>
+            <a id="game_emulation_via_dnn" class="project" href="/posts/game_emulation_via_dnn" style="background-image:url('/posts/game_emulation_via_dnn/index.jpg');">
+    <h2>Game Emulation via Neural Network</h2>
+    <p></p>
+    <div class="posteddate">
+        05 September 2022
+    </div>
+</a>
+<div class="post">
+    <style>
+.TODO { background:pink; color: purple; font-family: monospace; padding: .25em; }
+#demo { transition: 0.1s ease transform; }
+#demo:hover { transform: scale(1.05); }
+</style>
+<p>I made a playable Pokémon overworld. It looks (mostly) like a normal video game, and you can try it in your web browser <a href="./demo">here</a>:</p>
+<a href="./demo"><img src="demo.jpg" id="demo" alt="A screenshot of the playable demo, showing controls overlaid on a rendered game overworld."/></a>
+<p>Although this looks like a video game, I did not write any game code.<br/>This program is actually a neural network <em>mimicking</em> a video game.</p>
+<h2 id="definitions">Program? Game? Neural network?</h2>
+<h3 id="what-is-a-program">Programs: sequences of instructions that transform input&#8594;output</h3>
+<p>A human could run through these instructions to transform input into output:</p>
+<blockquote>
+    <p><strong>Instructions</strong></p>
+    <ol>
+        <li>Take two input numbers</li>
+        <li>Sum the numbers</li>
+        <li>Halve that to get your output</li>
+    </ol>
+    e.g. (190, 10)&#8594;<span class="spoiler">100</span>, or (2, 4)&#8594;<span class="spoiler">3</span>
+</blockquote>
+<p>The instructions above are a program, written in natural language, for humans. Some in-between steps are unspecified (how do you add two numbers? what even is a number, anyway?) but it's okay, because humans have a lot of background knowledge that they can use to fill in the gaps.</p>
+<h3 id="what-is-a-programming-language">Programs are usually written in programming languages, for computers</h3>
+<p>A computer could run through <em>these</em> instructions to transform input into output:</p>
+<pre>print((
+    int(input("1st number: ")) + int(input("2nd number: "))
+) / 2)</pre>
+<p>This is also a program (the same one as before), now written in a programming language. Computers can directly translate programming languages into computer languages.</p>
+
+<p>This means, if we write our program in a programming language, no human ever needs to run through the program. We can just ask a computer to do it.</p>
+
+<h3 id="the-literal-genie-problem">The "literal genie" problem</h3>
+<p>The downside of writing our program for a computer (instead of a human) is that computers have very little background knowledge. A computer will always obediently and uncreatively follow the precise instructions we wrote down.</p>
+<p>This often leads to <a href="https://tvtropes.org/pmwiki/pmwiki.php/Main/LiteralGenie">"literal genie"</a> scenarios, where the computer does what we wrote and not what we wanted.</p>
+<img src="python2_is_bad.jpg" alt="A screenshot of the earlier program giving an unexpected answer when input has leading zeros">
+<h3 id="what-is-a-video-game">A video game is a type of a program</h3>
+<p>A video game is some program that takes controls (like ["up", "down"]) as input, and then produces video frames as output. Pokémon is a good example.</p>
+<p><img src="diagram_game_1.jpg" alt="A diagram showing how controls go into the game and video frames come out"></p>
+<h3 id="what-is-a-neural-network">A neural network is also a type of program</h3>
+<p>Neural networks are like the Ditto of programs. We can write ("train") a neural network to mimic any other program that exists or could conceivably exist.</p>
+<p><img src="diagram_ditto_1.jpg" alt="An illustration of the Pokémon Ditto - a smiling purple blob"></p>
+<p>In principle, we could train a neural network to mimic a video game, and then use the trained network instead of the "real" game, and no one would notice the difference.</p>
+<p><img src="diagram_game_ditto_1.jpg" alt="A diagram of the video game from earlier, but the game portion is labeled 'neural network' and appears to be a Ditto in the shape of the original game."></p>
+<p>Principles are often misleading, though - how do we actually get a network-as-game working in practice? What <em>specifically</em> do we have to do? What if it doesn't work?</p>
+<h2 id='how-do-you-make-a-neural-network'>How do you write a neural network, anyway?</h2>
+<h3 id='neural-networks-are-written-in-dataset'>Neural networks are written in dataset</h3>
+<p>Most programs (and most video games) are written as code in traditional programming languages. Neural networks, though, are <a href="https://karpathy.medium.com/software-2-0-a64152b37c35">"written" in dataset</a>. The input&#8594;output instructions for a neural network are literally written as a big list of desired input&#8594;output pairs.</p>
+<p>So, to mimic a Pokémon game with a neural network, I first needed a dataset of (controls, memory)&#8594;(video frame) pairs that demonstrated every game-like behavior I wanted the network to exhibit.</p>
+<h3 id='collecting-a-dataset'>Collecting a dataset</h3>
+<p>I downloaded, cropped, and resized some Pokémon "Let's Play" videos to get a bunch of reference outputs (video frames).</p>
+<img src="sample_frames.jpg" alt="A collage of six unlabeled video frames showing parts of the Pokémon overworld" />
+<p>These video frames were missing the corresponding input (control) information. I just labeled them with my best guess.</p>
+<p>To avoid having to label any "memory" input or output - I planned to just feed in the previous video frame instead.</p>
+<p><img src="diagram_game_ditto_autoregressive_1.jpg" alt="A diagram of a game as neural network, with the output video frame flowing back into the network as input."></p>
+<p>This "everything offscreen is forgotten" setup meant that gameplay would be... shallow, to say the least. Still, if a network could mimic this dataset, it seemed like enough for a demo.</p>
+<img src="sample_pairs.jpg" alt="A screenshot of two examples from the dataset, showing the memory and control inputs as well as the corresponding video frame outputs" />
+<h3 id='writing-training-code'>Writing training code</h3>
+<h4 id='writing-an-untrained-network'>Writing an untrained neural network</h4>
+<p>To get a neural network that mimics our dataset, we start with a neural network that doesn't.</p>
+<p>This neural network will have lots of <del><a href='https://wiki.c2.com/?MagicNumber'>magic numbers</a></del> "learnable parameters" inside, each controlling the behavior of a single neuron within the network. For different choices of parameter values, the network will do different things. Initially, the parameters are set randomly, and the network doesn't do anything useful.</p>
+<p>I wrote a network with around 300k parameters - tiny, by neural network standards.</p>
+<img src="simple_model.jpg" alt="A graph diagram showing a simple model which consumes memory and control input, processes it through several convolutional layers followed by relu layers, upsamples with PixelShuffle, and produces a video frame as output. The memory input is the same shape as the video frame output."/>
+<h4 id='writing-scoring-code'>Writing scoring code</h4>
+<p>Next, we need a way to measure how good our neural network is at mimicking the dataset. We write some "scoring" code that grabs random (input&#8594;output) pairs from our dataset, runs the neural network on those inputs, and scores how well the network's outputs match the actual reference outputs from the dataset.</p>
+<p>By convention, our score measures the amount of <strong>error</strong> between the network's prediction and the reference output from the dataset. Lower is better, and zero is the best possible score.</p>
+<p>In my case, the randomly-initialized network produced the same gray frame for each input, and scored poorly. I needed a better set of parameters.</p>
+<img src="untrained.jpg" alt="A screenshot of two examples from the dataset, showing the memory and control inputs as well as the corresponding prediction and computed score (error) of each prediction."/>
+<h4 id='writing-a-training-loop'>Writing a training loop</h4>
+<p>To get a good choice of parameters, we make a training loop - a bit of code which repeatedly runs the score-estimation code and makes small changes to the network's parameters to improve the network's score.<span class="footnote">This code checks, for each parameter, whether the score would improve by wiggling that parameter slightly up or slightly down. Then the code moves <em>all</em> parameters slightly in their individual directions-of-improvement, and hopes for the best.</span></p>
+<p>The training loop will also periodically show us some visualizations.</p>
+<img src="training_loop_1.jpg" alt="A screenshot of the training loop, showing initial (very blurry) network predictions from ~1000 steps in, as well as a plot of scores improving." />
+<p>As our training loop runs, our parameters change, and our average score gets better and better. Before our eyes, a training loop gradually transforms our randomly-initialized, undifferentiated network into a specific neural network that mimics our specific dataset.</p>
+<img src="training_loop_2.jpg" alt="A screenshot of the training loop, showing later (less blurry) network predictions from ~16000 steps in, as well as a plot of scores improving." />
+<p>Eventually, the training updates start cancelling each other out, and the score gradually stops improving. If it worked, we now have a network that scores well and successfully mimics the input&#8594;output behavior from our dataset.</p>
+<img src="training_loop_3.jpg" alt="A screenshot of the training loop, showing later (moderately sharp) network predictions from ~300,000 steps in, as well as a plot of scores improving more slowly." />
+<p>If it <em>really</em> worked, our network will have learned general rules for mimicry that work for unseen inputs as well.</p>
+<p>Our training procedure favors parameter configurations that are close to the initial random values, and maximally-uninformed about any specific dataset example, and the network usually doesn't have enough neurons to memorize the whole dataset anyway, so we have a decent chance of generalization.</p>
+<img src="training_loop_4.jpg" alt="A screenshot of the training loop, showing later (fairly sharp) network predictions from ~600,000 steps in, as well as a plot of scores plateaued." />
+
+<p>After I trained my network for a while, its predictions looked pretty good, and the score looked fine too. I'd translated my dataset into a runnable program. Time to run it.</p>
+
+<h3 id='neural-notwork'>The genie strikes</h3>
+<p>When I tried to play this initial network like a video game, unfortunately, my trained neural network was a neural notwork. Totally broken.</p>
+<img src="neural_notwork.gif" alt="A screen recording of a simple game loop using the trained model. The predictions do not mimic the game, and instead begin to blur and saturate, becoming an unrecognizable mess of color within the course of a few hundred control inputs." />
+<p>What the heck! Training loops are code, and could have bugs... but training converged and everything. Is it "overfitting"? Is Pokémon emulation "AI-complete"?<br />Is deep learning <a href="https://twitter.com/plinz/status/1502337713315274760">"hitting a wall"</a>, here, in this blog post?</p>
+<h2 id='three-problems-of-neural-networks'>The three problems neural networks have</h2>
+<p>Unfortunately, even if we have coded a perfect training loop, there are three "literal genie gives us exactly what we ask for"-type problems that training can't fix, three reasons that the neural network we wrote might not do what we wanted.</p>
+<h3 id='underpowered'>Problem 1 - It's underpowered. A network can't give itself more neurons.</h3>
+<img src="underpowered.jpg" alt="An illustration of Ditto unsuccessfully mimicking a complicated bonsai tree. Ditto's shape is a blobby, dull approximation of the actual bonsai."/>
+<p>Our network may be too weak to represent the full input&#8594;output relationship described by the dataset (even if we find the best-possible parameters).</p>
+<p>With more training, an underpowered network will just keep scoring poorly, forever.</p>
+<p>We must make our network structure task-appropriate, or just very expressive (lots of neurons / layers), so that a solution (perfect-scoring set of parameters) actually exists.</p>
+<p>In this case, I wanted my network to be small / simple enough that it could run in a web browser without much deliberate performance optimization on my part - so it was deliberately underpowered.</p>
+<p>I tried doubling the model capacity to around 600k parameters, and did my best to allocate this capacity sensibly based on my understanding of the game-emulation task. I was able to get the training loss a bit lower, and when I tested this trained model it started strong, but gameplay still eventually collapsed.</p>
+<img src="neural_notwork_2.gif" alt="A screen recording of a simple game loop using the trained model. The predictions mimic the game initially, but become an unrecognizable mess of color eventually." />
+<p>Darn. What else could be wrong with my network?</p>
+<h3 id='underinformed'>Problem 2 - It's underinformed. A network can't give itself missing input information.</h3>
+<img src="underinformed.jpg" alt="An illustration of Ditto confronted with an ambiguous dataset, in which similar inputs (small black squiggles) correspond to several distinct outputs (a red triangle, green circle, and blue square respectively). Ditto is visibly confused by the dataset and, when asked to predict the output for a new squiggle, predicts a single smudged image which averages the red triangle, green circle, and blue square together."/>
+<p>The inputs in our dataset may not contain enough information to, in general, determine the correct output. In this case, there exists no general program that would get a perfect score.</p>
+<p>With more training, an underinformed network will probably keep scoring imperfectly at everything (via "blurry" predictions that blend several guesses). Eventually, an underinformed network may start getting a perfect score on the training dataset by brute-force memorization, while getting no better in general.</p>
+<p>We must feed the network all necessary input information per example, and fix any inconsistencies in the corresponding outputs, so that every output is exactly knowable from the corresponding input via the same general rule.</p>
+<p>In my case, the lack of true memory input was definitely hindering the network. Still, I took steps to reduce the ambiguity in my frame-to-frame dataset:</p>
+<ol>
+    <li>I scrubbed through the dataset to fix inconsistencies in the "control" labeling.</li>
+    <li>During training, I let the network make several distinct guesses per example, and only scored the best guess, to simulate having extra input information.</li>
+</ol>
+
+<p>After working to address both Problem 1 and Problem 2, my network's predictions on the training dataset looked a bit better, and the loss was even lower. When played as a video game, it seemed to work okay for a while, but still eventually collapsed into a soup.</p>
+<img src="neural_notwork_3.gif" alt="A screen recording of a simple game loop using the trained model. The predictions mimic the game initially, but become an unrecognizable mess of color after errors begin to compound." />
+<p>Thinking it through, Problem 1 and Problem 2 should have only caused imperfections, not catastrophic failure. So my network must be afflicted with something else, some sort of horrible "Problem 3"...</p>
+
+<h3 id='incomplete-dataset'>Problem 3 - It's underdefined. A network can't read our mind to learn about input&#8594;output requirements we omitted from the dataset.</h3>
+
+<img src="underdefined.jpg" alt="An illustration of Ditto confused by a test example that has no analogous training example. The visible training dataset shows pairs of images, where the input image always shows two identical shapes adjacent, and the output contains the two shapes overlaid at two scales, concentrically. In the test example, the input shapes are no longer identical, and Ditto cannot predict what the result should be. Ditto's confused prediction contains a glitchy mix of several possible hypotheses."/>
+
+<p>We may desire input&#8594;output behaviors from our network that we never write down as input&#8594;output pairs in our training dataset. That's bad. It's very bad. It's even more bad than problem 1 or problem 2, because the magnitude of failure for "never-represented-in-the-dataset" inputs is potentially unbounded.</p>
+
+<p>Every input&#8594;output behavior we care about <strong>must be written in the training dataset</strong> as an input&#8594;output pair. Ideally many pairs, many variations, so that getting a perfect score will require the network to learn a general rule for this entire category of inputs.</p>
+
+<p>In my case, I had wanted to feed my neural network its own output, in a loop, and get game-like video frames out, even after many iterations.</p>
+
+<p>This was not an input&#8594;output requirement I told the network about during training, though. I only trained my network to produce video frame outputs for real video frame inputs. I was invoking <a href="https://wiki.c2.com/?UndefinedBehavior">undefined behavior</a> at test time.</p>
+<p>The solution to "our network works during training but not when we test it" is, of course, <del>use a sophisticated regularization strategy</del> label the test data and train on them too.</p>
+<p>If we keep doing this, eventually the set of training inputs will expand to cover the kind of inputs we are testing the network on, and we won't be invoking undefined behavior anymore.</p>
+<p><img src="diagram_distributions_1.jpg" alt="Two venn diagrams annotated with faces similar to the face of the Ditto illustration earlier. Each diagram has a 'train' and 'test' circle visible. In the left diagram, train and test only partially overlap, and the face is sad. In the right diagram, test is a subset of train, and the face is happy."></p>
+<p>In my case, this just meant I needed to occasionally have the network inputs be previous neural network outputs (instead of "real" frames) during training, so that the network would learn to continue gameplay from a previous network-predicted frame.</p>
+<p>While I was at it, I also decided to drop out the input frames occasionally (random static with 1% probability, black void with 1% probability), so that the network would learn to initialize gameplay from an empty canvas.</p>
+<img src="training_aug_input.jpg" alt="A screenshot of visualizations from the fixed training loop, showing clean inputs (real frames from the dataset), the corresponding augmented inputs, and the corresponding predictions from the current network. The augmented inputs are a mix of real frames, previous neural-network-predicted frames, and occasional empty frames." />
+<h2 id='successful-training'>Successful training, at last</h2>
+<p>After addressing all three problems, my network was suitably powered, informed, and defined. My trained network mimicked the dataset acceptably well, even during the "test scenario" of long-running gameplay. This is the version used in the web demo.</p>
+<img src="waves.gif" alt="A screen recording of gameplay in which our character watches waves roll across a lake. The rendering is stable over time and does not collapse." />
+<p>More engineering could always make the network better (clean up the dataset, add more data, optimize the run-network-in-web-browser code, make the network bigger, optimize the training loop, train it longer). If we fix the missing input information, we could get even get inventory working, and get battles working, and so on... but this network is already good enough to demonstrate the point.</p>
+<h2 id='the-point-of-the-post'>So, what's the point</h2>
+<h3 id='neural-networks-are-not-a-black-box'>Neural networks are not a "black box"</h3>
+<p>If we only encounter neural networks written by others, it is easy to think of neural networks as prepackaged unitaskers; "black boxes" which are uniquely suited for exactly the set of tasks that neural networks already do.</p>
+<img src="unitasker.jpg" alt="An illustration of Ditto mimicking a toaster." />
+<p>I've seen this kind of take floating around the internet a lot:</p>
+<blockquote>
+Neural networks are just the latest algorithm for making toast;<br/>why are people so excited?
+</blockquote>
+<p>(Substitute "making toast" for playing chess, writing a poem, painting a picture, whatever the neural network is doing)</p>
+<p>There's also the enthusiastic version:</p>
+<blockquote>
+I love neural networks, and use them for <em>all</em> my heat-on-bread needs!
+</blockquote>
+<p>Even the enthusiasts typically admit that neural networks are mysterious, with limited practical applicability:</p>
+<blockquote>
+    Neural networks are still untrustworthy "black boxes" which fail for weird reasons that we have no way to debug. They're state-of-the-art for certain specific tasks, which makes them useful, but neural networks are not ready to do everything just yet.<br/><br/>
+    The way forward is to combine the best of cutting-edge neural networks with principled traditional code, in a modular and interpretable fashion, utilizing the best of the old while embracing the new, etc. etc.
+</blockquote>
+<p>It sounds very sensible and wise - who could possibly dislike a dispassionate acknowledgement of tradeoffs, followed by a pledge to combine the best of two things?</p>
+<p>I think this framing is wrong, though. In my experience, neural networks are not "black boxes". They're just programs that do what you trained them to do. They often fail to do what you <em>wanted</em>, for the same boring "literal genie"-type reasons any computer program ever fails.</p>
+<p>Moreover, when it comes to "interpretability", there's a very specific problem with traditional code, a problem that neural networks solve outright.</p>
+<h3 id='the-problem-with-code'>The problem with code</h3>
+<p>The problem with code is that each line of code you write obfuscates a program's input&#8594;output behavior further.</p>
+<p>To define a simple, <a href='https://github.com/LiquidFox1776/oregon-trail-1978-basic/blob/master/oregon-trail-1978.bas' target='_blank' class='url'>basic program</a>, writing traditional code in a traditional programming language works great. You just write down the steps you want to happen, in order, and then that's what happens. To know what the code "does", you can just read it.</p>
+<p>Code is alive, though. To know what your code <em>actually</em> does, you have to run it. As you add more lines of code, the gap between what code "does" and what it actually does grows ever bigger.</p>
+<p>With enough code, you get unpredictable runtime, inexplicable behavior, mysterious bugs whose "fix" takes a week to write and introduces three new bugs. You are entirely reliant on end-to-end testing (run the code on a dataset of inputs, wait for it to finish, and check the program's outputs against known-good outputs) to get any input&#8594;output guarantees at all.</p>
+
+<p>"Modular and interpretable code" sounds great until you are staring at 100 modules with 100,000 lines of code each and <a href='https://news.ycombinator.com/item?id=18442941' target='_blank' class='url'>someone is asking you to interpret it</a>.</p>
+
+<h3 id='the-magic-of-data'>The magic of data</h3>
+<p>Programmers (notably <a href='http://gamearchitect.net/Articles/DataDrivenDesign.html' target='_blank' class='url'>game programmers</a>) have learned to offload program complexity into <em>data</em>. Numbers go into config files, 1d arrays go into audio files, 2d arrays go into image files, and so forth.</p>
+<p>Unlike code, data is easy to understand and easy to edit. Unlike code, different pieces of data can safely be edited in parallel by many different teams. Unlike code, data is not alive.</p>
+<p>By offloading complexity into data files, a program can keep growing (100MB... 1GB... 10GB), while the proportion of program complexity written in living code gets smaller and smaller. The input&#8594;output behavior hurtles towards unknowability, but at a sub-linear rate.</p>
+<h3 id='neural-networks-are-made-of-data'>Neural networks: an entire program made of data</h3>
+<p>Neural networks are both the solution to the "each line of code obfuscates my program's input&#8594;output behavior further" problem, and the natural terminus to the offload-complexity-as-data strategy that programmers already use.</p>
+<p>With a neural network, you write the intended input&#8594;output behavior of your program directly and explicitly as data in the training dataset. Every "for this input, produce this output", every "except for this one case, then do this other thing". It's all just there.</p>
+<p>Regardless of how complicated your program's behavior is, if you write it as a neural network, the program remains interpretable. To know what your neural network actually does, just read the dataset.</p>
+<h3 id='games-via-neural-network-really'>Games via neural network... really?</h3>
+<p>Admittedly, this whole video-game-written-as-neural-network thing hasn't quite caught on yet.</p>
+<p>Apart from the "underpowered, underinformed, and underdefined" problems I covered earlier, and apart from the cultural inertia of "modular and interpretable" approaches, there is also an embarrassing ~16&times; slowdown when computation is done via neuron activations instead of ones and zeros. For games, that's not welcome news.</p>
+<p>The kind of game-as-neural-network that can fit in your web browser today is... pretty tiny, and limited to rendering tiny, low-resolution games. The networks that fit in your web browser in 2030 will probably be capable of more. Like, a lot more.</p>
+<img src="sd_rendering_pokemon.jpg" alt="A Pokemon-inspired game world rendered by Stable Diffusion, a huge neural network that currently takes several seconds to render a single frame."/>
+<p>So, I expect neural networks will subsume games. From the outside in, starting from the <a href="https://en.wikipedia.org/wiki/Deep_learning_super_sampling">final video frames</a>, chewing through G-buffers, replacing layers of "modular and interpretable" code one by one.</p>
+<p>Once you've successfully used a neural network for a single layer in your nightmarishly-complicated, it-only-works-at-all-because-integration-tests-enforce-the-intended-behavior program, someone is going to ask the obvious question about the adjacent layers.</p>
+<blockquote>
+This layer of code is so complicated. No one seems to understand how to make it faster, or how to make it better, or why it works at all.<br /><br />
+
+We're feeding the output to a neural network anyway.<br /><br />
+
+Couldn't the network just... do this part too?
+</blockquote>
+
+<p>Since neural networks are programs, the answer is always yes! They can mimic anything. As long as you specify the behavior you want, really, really precisely.</p>
+
+<hr />
+
+<p><img src="training_neural_network_2up.jpg" alt="An image titled 'Neural Network Training' showing two frames from the Pokémon animated series. In the first frame, a gloved hand points at a book page open to an illustration of the Pokémon Dratini, and a voice says 'Ditto, transform into this!'. In the second frame, Ditto has transformed into a copy of the book itself."></p>
+
+<script>
+    // got annoyed at the quotes in this post specifically, since there are so many of them
+    function smarten(a) {
+        // thanks to https://gist.github.com/drdrang/705071
+        a = a.replace(/(^|[-\u2014/(\[{"\s])'/g, "$1\u2018");      // opening singles
+        a = a.replace(/'/g, "\u2019");                             // closing singles & apostrophes
+        a = a.replace(/(^|[-\u2014/(\[{\u2018\s])"/g, "$1\u201c"); // opening doubles
+        a = a.replace(/"/g, "\u201d");                             // closing doubles
+        return a;
+    };
+    function fixQuotes(x) {
+        for (let y of x.childNodes) {
+            if (y.nodeType == Node.TEXT_NODE) {
+                y.textContent = smarten(y.textContent);
+            } else if (y.nodeType == Node.ELEMENT_NODE){
+                fixQuotes(y);
+            }
+        }
+    }
+    function fixLinks(x) {
+        if (!x.id) return;
+        let a = document.createElement("a");
+        a.href = `#${x.id}`;
+        x.classList.add("headerLink");
+        x.appendChild(a);
+    }
+    Array.from(document.querySelectorAll("p")).forEach(fixQuotes);
+    Array.from(document.querySelectorAll("blockquote")).forEach(fixQuotes);
+    for (let i = 1; i < 7; i++) { Array.from(document.querySelectorAll(`h${i}`)).forEach(fixQuotes); }
+    // also links for this post only oops
+    for (let i = 2; i < 7; i++) { Array.from(document.querySelectorAll(`h${i}`)).forEach(fixLinks); }
+</script>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

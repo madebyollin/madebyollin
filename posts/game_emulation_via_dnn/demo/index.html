@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+        <title>Game Emulation via Neural Network</title>
+        <style>
+            * { touch-action: manipulation; user-select: none; -webkit-touch-callout: none; -webkit-user-select: none;  }
+            body, html { padding: 0; margin: 0; background: #101010; height: 100vh; width: 100vw; font-family: sans-serif; }
+            canvas { display: block; margin: 0 auto; width: 100vw; height: auto; image-rendering: pixelated; }
+            @media screen and (min-aspect-ratio: 4/3) { canvas { width: auto; height: 100vh; } }
+            #controls { position: absolute; width: 384px; height: 128px; bottom: 0; margin: 8px; }
+            #stats { position: absolute; top: 0; right: 0; padding: 8px 16px; font-size: 12px; color: white;
+                     box-sizing: border-box; z-index: 100; opacity: 0.5; font-weight: bold; background: black; }
+            .c { width: 64px; height: 64px; background: #202020d0; font-size: 32px; color: white; text-align: center;
+                 padding-top: 12px; text-transform:uppercase; box-sizing: border-box; display: inline-block;
+                 transition: 0.1s ease transform,color,background-color; z-index: 100; cursor: pointer; }
+            .c.pressed { background: white; color: dodgerblue; transform: scale(1.1); border-color: white; }
+            .c.shift { color: orange; transform: scale(1.2); font-weight: bold; }
+            #c-w { display: block; margin-left: 64px; }
+            #c-h { position: absolute; right: 0; bottom: 0; margin: 8px; }
+            #c-r { position: absolute; right: 0; bottom: 72px; margin: 8px; }
+            #help { position: absolute; display: none; width: 100vw; height: 100vh; background: black; color: white;
+                    box-sizing: border-box; padding: 32px; }
+            #help.pressed { display: block; }
+            h2 {text-transform: uppercase; opacity: 0.9; color: orange; }
+            p { opacity: 0.8; font-size: 32px; line-height: 1.5; color: white; padding-right: 64px; }
+            a { color: dodgerblue; }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+        <script src="script.js" charset="utf-8"></script>
+    </head>
+    <body>
+        <div id="controls">
+                                           <div id="c-w" class="c">w</div>
+            <div id="c-a" class="c">a</div><div id="c-s" class="c">s</div><div id="c-d" class="c">d</div>
+        </div>
+        <div id="stats"></div>
+        <div id="c-h" class="c">?</div>
+        <div id="c-r" class="c">🎲</div>
+        <div id="help">
+            <h2>What is this?</h2>
+            <p>Press WASD to explore a glitchy emulation of an old video game.  Shift key (or double-click) for sprint.</p>
+            <h2>How does it work?</h2>
+            <p>A neural network was <a href="../">trained</a> to predict the next video frame given the current frame + controls. The network is small and missing some critical information, so it's a bit glitchy, but oh well.</p>
+        </div>
+        <canvas></canvas>
+    </body>
+</html>

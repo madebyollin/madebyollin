@@ -1,8 +1,10 @@
 content
 *.sh
+*.sw*
 templates
 .sass-cache
 .htaccess
 *.xcf
 *.sketch
 posts/_*
+.DS_Store
