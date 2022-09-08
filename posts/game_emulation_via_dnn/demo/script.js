@@ -3,7 +3,10 @@ window.addEventListener("load", async () => {
     const CONTROLS = {"": 3, "w": 4, "a": 5, "s": 6, "d": 7, "W" : 8, "A" : 9, "S" : 10, "D" : 11};
 
     // load stuff
-    const network = await ort.InferenceSession.create("./network.onnx", { executionProviders: ["webgl"] });
+    // ...now with graphite instead of aqua, for the refined viewer
+    const networkFile = (window.location.hash == "#graphite") ? "./graphite.onnx" : "./network.onnx";
+    if (window.location.hash == "#graphite") document.querySelector("#help").innerHTML += "<p style='color:steelblue'>(Graphite Edition)</p>";
+    const network = await ort.InferenceSession.create(networkFile, { executionProviders: ["webgl"] });
     const memory = new ort.Tensor("float32", new Float32Array(CHANNELS_IN * HEIGHT * WIDTH), [1, CHANNELS_IN, HEIGHT, WIDTH]);
     const control = new ort.Tensor("float32", new Float32Array([CONTROLS[""]]), [1, 1, 1, 1]);
 
