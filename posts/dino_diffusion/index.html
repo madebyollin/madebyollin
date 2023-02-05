@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Bare-bones Diffusion Models</title>
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <!-- <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul> -->
+        </header>
+        <main>
+            <a id="dino_diffusion" class="project" href="/posts/dino_diffusion" style="background-image:url('/posts/dino_diffusion/index.jpg');">
+    <h2>Bare-bones Diffusion Models</h2>
+    <p></p>
+    <div class="posteddate">
+        05 February 2023
+    </div>
+</a>
+<div class="post">
+    <style>
+#demo { transition: 0.1s ease transform; }
+#demo:hover { transform: scale(1.05); }
+</style>
+
+<p>To understand how diffusion models generate images, I wrote <a href="https://github.com/madebyollin/dino-diffusion">code</a> for training a bare-bones diffusion model without all the fanciness (no "epsilon parameterization", no "Gaussian conditionals", no <code>sqrt_one_minus_alphas_cumprod</code>).</p>
+
+<p>Based on that code, I trained a tiny diffusion model that generates 512&times;512 botanical images in your web browser. You can play with that demo <a href="./demo">here</a>.</p>
+
+<a href="./demo"><img src="demo.jpg" id="demo" alt="A screenshot of an interactive diffusion model demo."/></a>
+
+<p>So... how <em>do</em> diffusion models generate images? Why are these images as good as they are, and not better (or worse)? And... if we're talking about conjuring new images from nothingness, what does "better" even mean?</p>
+
+<h2 id="the-image-generation-task">The image generation task</h2>
+
+<h3 id="the-image-generation-api">The task of noise&#8594; image</h3>
+
+<p>The image generation task is: given only some <a href="https://en.wikipedia.org/wiki/Artistic_inspiration">random noise</a> as input, generate new images.
+
+<img src="image_generation_process.jpg" alt="A cartoon illustration of Ditto sitting in an empty room staring at scribbles on a sheet of paper. A TV static pattern is visible in the window." />
+    
+Furthermore, generated images should look "real" (when compared to some reference dataset of, you know, <em>actually</em>-real images).</p>
+
+<img src="image_generation_problem.jpg" alt="A cartoon illustration of Ditto presenting their painting in a gallery amongst other, far more detailed paintings. A gallery-goer looks on skeptically." />
+
+<h3 id="criteria">Criteria: plausibility, proportionality, and originality</h3>
+
+<p>Ideally, we want an image generator to exhibit:</p>
+<ol>
+    <li><strong>Plausibility</strong>: individual generated images should be indistinguishable from "real" images (no weird <a href="https://kcimc.medium.com/how-to-recognize-fake-ai-generated-images-4d1f6f9a2842">artifacts or glitches</a>).
+        <img src="plausibility.jpg" alt="An illustration of three sets of shapes; the first set (real images) are colorful circles; the second set (good generated images) are similarly colorful circles; the third set (bad generated images) are imperfect circles with a different palette of colors." />
+    </li>
+    <li><strong>Proportionality</strong>: a bunch of randomly-generated images should be indistinguishable from a bunch of randomly-selected real images (no traits should be noticeably over- or underrepresented).
+        <img src="proportionality.jpg" alt="An illustration of three sets of shapes; the first set (real images) are colorful circles; the second set (good generated images) are similarly colorful circles; the third set (bad generated images) are individually-plausible circles, but some colors or shapes are overrepresented and others are underrepresented." />
+    </li>
+    <li><strong>Originality</strong>: Image generators can train by looking at real images, but image generators should not just <a href="https://tvtropes.org/pmwiki/pmwiki.php/Main/YouAllLookFamiliar">copy</a>, <a href="https://tvtropes.org/pmwiki/pmwiki.php/Main/PaletteSwap">palette-swap</a>, <a href="https://tvtropes.org/pmwiki/pmwiki.php/Main/HeadSwap">splice-<a href="https://pokemon.alexonsager.net">together</a>, or <a href="https://tvtropes.org/pmwiki/pmwiki.php/Main/UndergroundMonkey">otherwise misappropriate</a> these images. A bunch of randomly-generated images should be indistinguishable from a bunch of randomly-selected real images <em>even</em> if we plagiarism-check both sets against the training dataset.
+        <img src="originality.jpg" alt="An illustration of three sets of shapes; the first set (real images) are colorful circles; the second set (good generated images) are similarly colorful circles; the third set (bad generated images) are simply a copy of the real images." />
+    </li>
+</ol>
+
+<h3 id="why-image-generation">Generation is interesting because it is fundamental, yet difficult</h3>
+
+<p>An archetypal "boring" task is <a href="https://paperswithcode.com/task/image-classification">image classification</a>. It feels contrived (just look at <a href="https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a#file-imagenet1000_clsidx_to_labels-txt-L180-L204">those categories</a>) and it also feels too easy (even a child <a href="https://openreview.net/pdf?id=7yMg2rS9N5I">could do it</a>). "Deep learning" methods solve classification while arguably <a href="https://youtu.be/CIfsB_EYsVI?t=216">not understanding</a> images very <a href="https://twitter.com/GaryMarcus/status/1460353982438645760">deeply</a>.</p>
+
+<p>Image generation is more interesting.
+    "Make more new stuff like this" is pretty much the most fundamental thing you can do with a dataset, yet it demands <a href="https://youtu.be/dnflBERf2zM?t=899">an incredible breadth</a> of understanding.
+    An image classifier just needs to discover some rules that distinguish the classes from each other, whereas an image generator needs to discover <em>every</em> rule that constrains real images, and then invent new, never-before-seen images that <em>also satisfy those rules</em>.</p>
+
+<p>Where do we even start?</p>
+
+<h2 id="the-specific-image-generation-task">The specific-image generation task</h2>
+
+<h3 id="the-specific-image-generation-api">The task of noise&#8594;<em style="font-size: inherit;">some particular</em> image</h3>
+
+<p>Since we know we need some sort of noise&#8594; image thingy, and we know <a href="../game_emulation_via_dnn/#what-is-a-neural-network">neural networks</a> can mimic any program (given a dataset of input&#8594;output pairs from that program), there's an obvious way to approach image generation:</p>
+
+<ol>
+    <li>Collect some dataset of real images (we'll try <a href="https://github.com/PokeAPI/sprites">some sprites</a>)<br /> <img src="./tiny_real_image_lineup.jpg" alt="A row of ten real images; our sample dataset." /></li>
+    <li>Create a different blob of random noise for each real image<br /> <img src="./tiny_noise_lineup.jpg" alt="A row of ten tiny pixelated images of random noise." /></li>
+    <li>Train a neural network to mimic this dataset of noise&#8594;image pairs</li>
+</ol>
+
+<p>Let's call this the "specific-image generation" task: for each noise blob in our dataset, our network is supposed to predict the corresponding specific image which we (arbitrarily) pair with this noise blob.</p>
+
+<p>Here are some example input&#8594;output pairs, if you want to try the task yourself. Cover up each real image with your hand or something (no cheating!) and try predicting the real image by looking only at the noise blob.
+</p>
+
+<img src="specific_image_generation_dataset.jpg" alt="A screenshot of examples from a specific-image-generation-task dataset, showing the noise inputs as well as the corresponding real image outputs" />
+
+<h3 id="the-specific-image-generation-task-is-trivial">The specific-image generation task is trivial, in a bad way</h3>
+
+<p>If we <a href="../game_emulation_via_dnn/#writing-training-code">train</a> a neural network on the specific-image generation task, we immediately get a confused, unhappy neural network that generates the same gray smear every time. This is, tragically, what peak performance looks like.</p>
+
+<img src="specific_image_generation_predictions.jpg" alt="An illustration of a confused, unhappy neural network predicting the same gray smear for three different noise images." />
+
+<p>The problem is that our 100%-noise inputs are 100%-<a href="../game_emulation_via_dnn/#underinformed">uninformative</a> of their corresponding outputs.
+   There's no underlying input&#8594;output algorithm to mimic, so our network quickly learns the minimum-error strategy is just
+   "ignore the input, and always predict the average output (a particular gray smear)".</p>
+
+<p>Now, technically, our network did learn something about the dataset (namely, what the average output looks like). Unfortunately, since this is the <em>only</em> thing our network learned about the dataset, image generation is yet unsolved.</p>
+
+<p>How do we make the 100%-noise inputs less useless?</p>
+
+<h2 id="the-denoising-task">The denoising task</h2>
+
+<h3 id="the-denoising-api">The task of noisified image&#8594;denoised image</h3>
+
+<p>The denoising task is: predict a specific real image from the dataset, given an input "noisified" version of that real image which has been mixed with <code>NL%</code> noise (and given the noise percentage <code>NL%</code>, indicating how much noise to remove).</p>
+
+<p>Here are some example input&#8594;output pairs, if you want to try the task yourself.</p>
+
+<img src="image_denoising_dataset.jpg" alt="A screenshot of examples from a denoising-task dataset, showing the noisy image inputs as well as the corresponding real image outputs" />
+
+<h3 id="the-denoising-task-is-nontrivial">The denoising task is nontrivial, in a good way</h3>
+
+<p>For <code>NL%</code> = 100%, the denoising task is identical to the specific-image generation task, and the optimal output is again "the average of all real images".</p>
+
+<p>When <code>NL%</code> &lt; 100%, though, part of the desired output is visible through the noise.  For every <code>NL%</code> &lt; 100%, for every noisified input image, there is now a distinct (and less-blurry) optimal output, namely "the average of whichever real images could have been mixed with <code>NL%</code> noise to create this noisified image".</p>
+
+<img src="denoising_predictions.jpg" alt="An illustration of a network predicting reasonable denoised outputs for three inputs with different levels of noise; the noisier inputs yield blurrier outputs." />
+
+<p>Neural networks can spend a long time training on the denoising task and making continuous, steady progress. At each step of training, the network receives a new batch of randomly-selected noisified real images, tries its best to denoise them, checks its work against the real images, and gets a little bit better.</p>
+
+<img src="denoising_training_1.jpg" alt="A screenshot of training loss on the denoising task, which decreases over time." />
+
+<p>As our network trains, it learns more and more sophisticated rules for denoising images, and sops up more and more information about the dataset.</p>
+
+<img src="denoising_training_2.jpg" alt="A screenshot of training loss on the denoising task, which decreases over time, improving well past the point where the specific-image loss plateaued." />
+
+<p>Ultimately, solving image denoising turns out to also solve image generation.</p>
+
+<h2 id="how-denoising-solves-generation">How denoising solves generation</h2>
+
+<h3 id="denoising-in-a-loop">We can generate images by denoising in a loop</h3>
+
+<p>Given only a trained <code>denoising_network</code>, we can generate new images starting from 100% noise, by iteratively mixing in denoised predictions such that the % of noise falls gradually to 0.</p>
+
+<p>Here's a video of the denoising-based generation process:</p>
+
+<video controls src="./diffusion_animation.mp4"></video>
+
+<p>In code, the generation-by-denoising process looks like this:</p>
+
+<pre class="python">
+def generate_image(denoising_network, pure_noise):
+    # plan some noise levels, decreasing from 100% to 0%
+    noise_levels = list(range(100, -1, -1))
+    # set the working image ("x") to 100% noise
+    x = pure_noise
+    # iteratively remove noise. for each step...
+    for step in range(0, 100):
+        # get the current noise level of x
+        nl_in = noise_levels[step]
+        # get the expected denoised version of x
+        denoised = denoising_network(x, nl_in)
+        # get the next planned noise level for x
+        nl_out = noise_levels[step + 1]
+        # reduce the noise level of x from nl_in to nl_out,
+        # by blending x with a bit of the denoised image
+        alpha = nl_out / nl_in
+        x = alpha * x + (1 - alpha) * denoised
+        # (x had nl_in% noise but now has nl_out% noise)
+    # after all steps, x now has 0% noise, so we are done
+    return x
+</pre>
+
+<p>But... huh? Why does that work? Where does the image actually come from?</p>
+
+<p>As a large blog post written by a human, I am not capable of understanding any languages other than... wait, no, my primary function is... okay, look, let's think step by step.</p>
+
+<h3 id="why-it-works">Denoising-based generation works by iterative pareidolia</h3>
+
+<p>The first step is straightforward: given a 100%-noise <code>x</code>, our denoising network says "idk" and predicts the blurry average output.
+    <span class="footnote">...or close to it, at least :)</span></p>
+
+<img src="generation_step_0.png" alt="An image showing the initial 100%-noise inputs and denoised (gray smear) outputs." />
+
+<p>We then blend 1% of that "average output" into our working image <code>x</code>, so the working image is now 99% noise, and denoise it again.</p>
+
+<img src="generation_step_1.png" alt="An image showing the next-step 99%-noise inputs and denoised outputs, which are sharper than the initial gray smears." />
+
+<p>Something interesting happened here - our denoising network gave us a more-distinct, less-blurry result! Why?</p>
+
+<p>In essence, our network is being bamboozled. It was trained to expect that 99%-noise images will always contain 1% signal - some faintly visible indication of the specific real image it's supposed to predict.
+    However, we're giving our network an input that is 99% noise and 1% "average of all possible images" - so whatever indication it sees is <a href="https://www.pokemon.com/us/pokedex/moltres">just</a> <a href="https://i.redd.it/zv0isvnjj9e21.jpg">pareidolia</a>; some random noise interpreted as signal.
+</p>
+
+<img src="train_test_comparison.jpg" alt="An image comparing the provenance of model inputs during training and generation. During training, real images are noisified (moving away from real images), and the network is supposed to reverse the movement. During generation, we start at the average of possible real images, move randomly, and use the denoising network to accelerate us towards the nearest real image." />
+
+<p>
+    In effect, we start from an impasse (the average of possible remaining images), flip a coin (by mixing in random noise), and then use our network to interpret that coin-flip as a decision (about what kind of images to generate).
+    Mixing in the network's denoised prediction nudges <code>x</code> towards whatever kind of real images lie in the "noise-direction" of our previous step's blurry average.
+    We can repeat this process again and again to get a less-blurry output each time.</p>
+
+<img src="generation_step_2.png" alt="An image showing the next-step 98%-noise inputs and denoised outputs, which are sharper than the previous step." />
+<img src="generation_step_3.png" alt="An image showing the next-step 97%-noise inputs and denoised outputs, which are sharper than the previous step." />
+
+<p>Eventually, the decisions are all made, the noise is all gone, and a specific sharp output image (drawn only from our network's imagination) is all that remains.</p>
+
+<img src="generation_step_99.png" alt="An image showing the last-step 1%-noise inputs and denoised outputs, which are entirely sharp and free of noise." />
+
+<p>To generate anything coherent, this denoising-based image generation process requires multiple iterative steps.
+    It also requires a smart denoising network that can detect very precisely when indications of structure become visible in the input,
+    and sort of "snap" denoised predictions towards the correct kind of real images (away from the previous step's blurrier prediction).
+    Without both, generated outputs are lackluster:</p>
+
+<img src="model_comparison.jpg" alt="A comparison of generated images from models trained for 5000 and 250000 steps; the 250k model produces more plausible generated images, but only if sampled for a reasonable number of steps." />
+
+<p>So, denoising can solve image generation... slowly... if that denoiser is really good!</p>
+
+<p>...although, compared to real images, these generated images are far from perfect... kinda unimpressive really... are we sure this denoising-based approach actually "solves" image generation? What were our criteria again?</p>
+
+<img src="distribution_comparison.jpg" alt="A comparison of many real images vs. many generated images." />
+
+<h3 id="revisiting-image-plausibility">Revisiting plausibility</h3>
+
+<p>Will our denoising-based generator generate images that look real?</p>
+
+<p>In principle, yes. Our network is trained to maximize average denoising accuracy, and knowing all of the rules that constrain real images - rules about color palettes, layouts, perspective, anatomy, optics, and so on - will improve denoising accuracy, so our network should learn them. We generate images by denoising in a loop, so these rules should inform generated output too, yielding "plausible" generated images that follow all the rules.</p>
+
+<p>In practice, there are a lot of error sources impeding plausibility - the finite memory of our neural network, the finite number of training steps, the bugs in our code, and so on. So plausibility won't be perfect, but we have a path to improve it.</p>
+
+<h3 id="revisiting-image-proportionality">Revisiting proportionality</h3>
+
+<p>Will our denoising-based generator generate images with the same distribution of content as real images?</p>
+
+<p>In principle, yes. Each step of denoising-based generation starts from the average of all remaining possible output images, and takes a "coin flip" to decide which subset of output images to go towards, so we if we take enough steps we should have fair odds of ending up at every possible output image (and image proportionality that perfectly matches our training dataset).</p>
+
+<p>In practice, proportionality is impeded by all of the same error sources that affect plausibility, so proportionality won't be perfect either, but we can also improve it with more effort.</p>
+
+<h3 id="revisiting-image-originality">Revisiting originality</h3>
+
+<p>Will our denoising-based generator make original images - and not just stitch together images it remembers from the training dataset?</p>
+
+<p>In principle, yes. Our network is trained to maximize average denoising accuracy, so it will learn rules that help denoise 100% of training images, then 99%, 98%, and so on, until its memory is full and its denoising accuracy saturates.</p>
+
+<p>For any reasonably-sized training dataset, our network will fill up with "general" denoising rules (applicable across many images) way before it learns any single-image rules. If our network accidentally learns any single-image rules, it will just forget them to free up space for more-general rules. If our trained network only knows general rules, it will perform just as well at denoising never-before-seen images, and its generated images will be just as original as any unseen image.</p>
+
+<p>This sounds great... but what if "as original as any unseen image" isn't enough?</p>
+
+<p>See, suppose we train our network on a large web-scraped dataset, and our network fills up while learning rules applicable to mere thousands of images.
+    That sounds safe, but if our dataset repeats certain images <strong>many thousands of times</strong>, our network will have learned to <a href="https://openai.com/blog/dall-e-2-pre-training-mitigations/#preventing-image-regurgitation">draw</a> <a href="https://arxiv.org/pdf/2301.13188.pdf">those images</a>.
+    If our dataset has the same watermark on thousands of photos, our network will have learned to <a href="https://twitter.com/hojonathanho/status/1275078553185292290">draw that watermark</a>.
+    If our dataset contains the <a href="./cursed_table.jpg">same phone-on-a-table image</a> replicated with thousands of different phone cases (aaagh), our network will have learned to <a href="https://www.reddit.com/r/StableDiffusion/comments/xh0r1w/an_artifact_from_overfitting_the_scene_in_the/">draw that same table</a> behind otherwise-original phone cases!</p>
+
+<p>Conversely, many things <em>should</em> be repeated and memorized. Humans may be amused when our network generates <a href="https://mobile.twitter.com/JanelleCShane/status/1531628806737342465">original misrememberings</a> of corporate logos (how <a href="https://www.signs.com/branded-in-memory/#burger-king">relatable!</a>), but humans will be unamused by <a href="https://twitter.com/thuminnoo/status/1580307221665107968">original takes</a> on human anatomy. A network can only remember so many things, and if the "good" memorization of finger geometry is getting pushed out by "bad" memorization of the wood grain texture on some table... well, we need to fix the dataset.</p>
+
+<h3 id="fix-the-dataset">"Fix the dataset"?</h3>
+
+<p>An ideal image generator achieves perfect plausibility, perfect proportionality, and perfect originality; it generates never-before-seen images that are indistinguishable from a never-before-seen slice of its training dataset.</p>
+
+<p>In practice, it's easy to imagine how this can go wrong. For example, if an ideal image generator were trained on the entire internet, it would generate images with the same aesthetic quality, same proportional representation of subject matter, and same unwavering commitment to originality as the actual internet.</p>
+
+<p>Creating a dataset that demonstrates the behavior we want is a challenging task in its own right, and diffusion models don't solve that task.
+   Diffusion models don't know what we want.
+   They just know how to denoise images, with reasonable average accuracy, based on rules learned from their training dataset.
+   What that dataset teaches the network is <a href="https://github.com/CPokemon/lgpe-texts/blob/master/story_en.txt#L5142 ">all on us.</a>
+</p>
+
+<h2 id="what-diffusion-models-are-useful-for">What diffusion models are useful for</h2>
+
+<p>Diffusion models are a good way to approach the whatever-generation task (it <a href="https://wandb.ai/schneider/audio/reports/Audio-Diffusion-Delta---VmlldzoyNDYyMzk1?accessToken=n1d34n35qserpx7nhskkfdm1q12hlcxx1qcmfw5ypz53kjkzoh0ge2uvhshiseqx">doesn't</a> have to be images!) with no ceiling on plausibility, proportionality, or originality.
+    Diffusion models are usually trained with guidance / "conditioning" inputs (a truly unconditional generator is pretty useless), but they work unconditionally too.
+    Diffusion models just need a powerful denoising network, lots of training time, and multiple denoising steps per generated output.</p>
+<p>
+    Diffusion models seem well-suited for being <del><a href="https://twitter.com/bbabenko/status/1534909906829967361">foundation models</a></del>
+    "huge neural networks that we train at great expense on a gigantic dataset and then distill, fine-tune, or prompt to address specific use-cases".
+</p>
+
+<p>I don't see diffusion models as a good choice for runtime-constrained scenarios, such as an in-browser demo (oh... oops).
+    The most popular diffusion model deployed today produces tiny, tiny images (upscaling to usable resolutions is done by a <a href="https://github.com/CompVis/stable-diffusion/blob/main/ldm/modules/losses/vqperceptual.py#L114">separate GAN</a>),
+    and it is still the slowest neural network I have ever <a href="../maple_diffusion">interacted with</a>.
+    For real-time applications, I expect GAN-like single-pass networks (distilled from huge diffusion models, perhaps?) will remain the way to go.</p>
+
+<script>
+    // silly hacks lol
+    function fauxSyntaxHighlightToken(tok, c) {
+        if (["for", "in", "def", "return"].includes(tok)) {
+            return `<span class='token reserved'>${tok}</span>`;
+        } else if (c == '(') {
+            return `<span class='token function'>${tok}</span>`;
+        } else {
+            return tok;
+        }
+    }
+    function fauxSyntaxHighlightLine(s) {
+        let out = "";
+        let comment = false;
+        let tok = "";
+        for (let c of s) {
+            if (comment) {
+                out += c;
+                continue;
+            }
+            if ("qwertyuiopasdfghjklzxcvbnm_".indexOf(c) >= 0) {
+                tok += c;
+                continue;
+            }
+            if (tok.length > 0) {
+                out += fauxSyntaxHighlightToken(tok, c);
+                tok = "";
+            }
+
+            if (c == "#") {
+                out += "<span class='token comment'><span class='prefix'>#</span>";
+                comment = true;
+            } else if ("+-*/=".indexOf(c) >= 0) {
+                out += `<span class='token operator'>${c}</span>`;
+            } else if ("[](),:".indexOf(c) >= 0) {
+                out += `<span class='token punctuation'>${c}</span>`;
+            } else if ("1234567890".indexOf(c) >= 0) {
+                out += `<span class='token number'>${c}</span>`;
+            } else {
+                out += c;
+            }
+        }
+        out += fauxSyntaxHighlightToken(tok, null);
+        if (comment) out += "</span>";
+        return out;
+    }
+    function fauxSyntaxHighlight(pre) {
+        pre.innerHTML = pre.textContent.split("\n").map(fauxSyntaxHighlightLine).join("\n");
+    }
+    document.querySelectorAll("pre.python").forEach(fauxSyntaxHighlight);
+</script>
+
+<script>
+    // I should put this in a shared file... eventually...
+    function smarten(a) {
+        // thanks to https://gist.github.com/drdrang/705071
+        a = a.replace(/(^|[-\u2014/(\[{"\s])'/g, "$1\u2018");      // opening singles
+        a = a.replace(/'/g, "\u2019");                             // closing singles & apostrophes
+        a = a.replace(/(^|[-\u2014/(\[{\u2018\s])"/g, "$1\u201c"); // opening doubles
+        a = a.replace(/"/g, "\u201d");                             // closing doubles
+        return a;
+    };
+    function fixQuotes(x) {
+        for (let y of x.childNodes) {
+            if (y.nodeType == Node.TEXT_NODE) {
+                y.textContent = smarten(y.textContent);
+            } else if (y.nodeType == Node.ELEMENT_NODE){
+                fixQuotes(y);
+            }
+        }
+    }
+    function fixLinks(x) {
+        if (!x.id) return;
+        let a = document.createElement("a");
+        a.href = `#${x.id}`;
+        x.classList.add("headerLink");
+        x.appendChild(a);
+    }
+    Array.from(document.querySelectorAll("p")).forEach(fixQuotes);
+    Array.from(document.querySelectorAll("blockquote")).forEach(fixQuotes);
+    for (let i = 1; i < 7; i++) { Array.from(document.querySelectorAll(`h${i}`)).forEach(fixQuotes); }
+    for (let i = 2; i < 7; i++) { Array.from(document.querySelectorAll(`h${i}`)).forEach(fixLinks); }
+</script>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a rel="me" href="https://sigmoid.social/@madebyollin">Mastodon</a> /
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

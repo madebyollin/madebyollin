@@ -16,7 +16,7 @@
 }
 
 a {
-  color: #1889f5;
+  color: #0066d2;
   font-size: inherit;
   font-weight: inherit;
 }
@@ -150,6 +150,9 @@ footer a:hover {
   background-position: center center;
   background-size: cover;
 }
+.postsummary.projectsummary h2 {
+  text-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2), 0px 0px 3px rgba(0, 0, 0, 0.2);
+}
 .postsummary.projectsummary.lightbg {
   background-color: rgb(255, 255, 255);
   color: rgb(0, 0, 0);
@@ -165,11 +168,16 @@ footer a:hover {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.7);
 }
 .postsummary.projectsummary.lightbg > .date::before {
   content: "Posted ";
+}
+.postsummary.projectsummary.lightbg h2 {
+  text-shadow: none;
 }
 .postsummary.projectsummary > .date {
   display: inline-block;
@@ -182,6 +190,8 @@ footer a:hover {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .postsummary.projectsummary > .date::before {
   content: "Posted ";
@@ -202,6 +212,8 @@ footer a:hover {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.7);
 }
@@ -225,6 +237,7 @@ footer a:hover {
   font-weight: 500;
   font-size: 64px;
   color: inherit;
+  text-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2), 0px 0px 3px rgba(0, 0, 0, 0.2);
 }
 .project > p {
   color: inherit;
@@ -249,11 +262,16 @@ footer a:hover {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.7);
 }
 .project.lightbg .posteddate::before {
   content: "Posted ";
+}
+.project.lightbg h2 {
+  text-shadow: none;
 }
 .project:hover {
   color: rgb(255, 255, 255);
@@ -269,6 +287,8 @@ footer a:hover {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .project .posteddate::before {
   content: "Posted ";
@@ -343,6 +363,8 @@ main > p {
   padding: 8px 16px;
   margin-bottom: 16px;
   font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.7);
 }
@@ -369,7 +391,7 @@ Formatting in the post itself, for each tag
   font-size: 1.5rem;
   text-align: left;
   margin-top: 3rem;
-  color: black;
+  color: rgb(0, 0, 0);
   font-weight: 500;
 }
 
@@ -377,7 +399,7 @@ Formatting in the post itself, for each tag
   font-size: 1.1em;
   text-align: left;
   margin-top: 2rem;
-  color: black;
+  color: rgb(0, 0, 0);
   font-weight: 500;
 }
 
@@ -385,7 +407,7 @@ Formatting in the post itself, for each tag
   font-size: 1em;
   text-align: left;
   margin-top: 0.75rem;
-  color: black;
+  color: rgb(0, 0, 0);
   font-weight: 500;
 }
 
@@ -511,6 +533,13 @@ Formatting in the post itself, for each tag
   transition: 0.5s transform linear;
 }
 
+.post video {
+  display: block;
+  max-width: 672px;
+  width: 100%;
+  margin: 16px auto;
+}
+
 .post img {
   display: block;
   max-width: 672px;
@@ -565,12 +594,12 @@ Formatting in the post itself, for each tag
 }
 
 .post a {
-  color: #1889f5;
+  color: #0066d2;
   font-family: inherit;
   font-size: inherit;
   font-weight: 500;
   text-align: left;
-  border-bottom: 1px solid rgba(24, 137, 245, 0.1);
+  border-bottom: 1px solid rgba(0, 102, 210, 0.1);
 }
 
 .post a:hover {
@@ -625,16 +654,17 @@ Formatting in the post itself, for each tag
 
 .post code {
   font-weight: 400;
-  color: black;
+  color: rgb(0, 0, 0);
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
   margin: -4px;
   padding: 2px 4px;
   margin-left: 2px;
   margin-right: 2px;
-  font-size: 0.9em;
+  font-size: 0.85em;
   white-space: nowrap;
-  font-family: "Fira Coda", "Inconsolata", monospace;
+  font-family: monospace;
   user-select: all;
 }
 
@@ -660,13 +690,13 @@ Formatting in the post itself, for each tag
   line-height: 1.5;
   margin-bottom: 16px;
   overflow: scroll;
-  font-family: "Fira Coda", "Inconsolata", monospace;
+  font-family: monospace;
   font-size: 0.9em;
   border-left: 2px solid rgba(0, 0, 0, 0.1);
   background: rgba(0, 0, 0, 0.02);
 }
 .post pre span {
-  font-family: "Fira Coda", "Inconsolata", monospace;
+  font-family: monospace;
 }
 .post pre.collapsed {
   text-overflow: ellipsis;
@@ -708,7 +738,7 @@ Formatting in the post itself, for each tag
 
 .post .footnote:before {
   content: " *  ";
-  color: #1889f5;
+  color: #0066d2;
   display: inline;
   font-size: 1rem;
 }
@@ -814,29 +844,41 @@ Formatting in the post itself, for each tag
     height: inherit !important;
   }
   .post code {
-    font-family: "Fira Coda", "Inconsolata", monospace;
+    font-family: monospace;
     white-space: normal;
     overflow-wrap: break-word;
     word-break: break-word;
+  }
+  .post pre {
+    font-size: 0.5em;
   }
   .project > h2 {
     font-size: 2.5rem;
   }
 }
 .token.operator {
-  color: rgb(96, 96, 96);
-}
-.token.punctuation {
-  color: rgb(160, 160, 160);
-}
-.token.string {
   color: #d11f04;
 }
+.token.punctuation {
+  color: rgb(96, 96, 96);
+}
+.token.string {
+  color: #8ad104;
+}
 .token.number {
-  color: #c004b2;
+  color: #1889f5;
 }
 .token.function {
-  color: #1889f5;
+  color: #6a00d1;
+}
+.token.reserved {
+  color: #d11f04;
+}
+.token.comment {
+  color: #a0a0a0;
+}
+.token.comment .prefix {
+  color: #dfdfdf;
 }
 
 /*  it works in chrome */

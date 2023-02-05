@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+        <title>Dino Diffusion</title>
+        <style>
+            body, html { padding: 0; margin: 0; font-family: sans-serif; min-width: 256px; }
+            #stats { position: absolute; top: 0; right: 0; padding: 8px 16px; font-size: 12px; box-sizing: border-box; z-index: 100; opacity: 0.5; font-weight: bold; }
+            #easel { display: block; margin: 0 auto; width: 50vh; margin-top: 8px; height: 50vh; position: relative; max-width: 100vw; max-height: 100vw; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+            canvas { height: 100%; position: absolute; top: 0; left: 0; box-sizing: border-box; }
+            #preview { transition: 0.2s ease opacity; opacity: 0; }
+            #sketchpad { transition: 0.1s ease opacity; opacity: 0; image-rendering: pixelated; }
+            #sketchpad.pressed { opacity: 0.5; border: 4px dotted gray; cursor: pointer; }
+            #progress { width: 100%; margin: 0 auto; height: 1%; overflow: hidden; opacity: 0; background: #e0e0e0; }
+            #bar { height: 100%; background: orange; }
+            #progress.stage1 { background: orange; }
+            #progress.stage1 #bar { background: darkorange; }
+            #progress.stage2 { background: darkorange; }
+            #progress.stage2 #bar { background: tomato; }
+            #progress.stage3 { background: tomato; }
+            #progress.stage3 #bar { background: crimson; }
+            #timeline { max-width: 100%; margin: 0 auto; overflow-x: scroll; white-space: nowrap; padding: 16px; background: #f0f0f0; height: 72px; }
+            #timeline>div { text-align: center; display: inline-block; margin: 0 8px; background: #e0e0e0; border-radius: 12px; transition: 0.1s ease transform,color,background-color; cursor: pointer; border: 4px solid transparent; box-sizing: border-box; }
+            #timeline>div.pressed { transform: scale(1.2); background: #d0d0d0; border: 4px solid orange; }
+            #timeline>div { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+            #timeline img { border-radius: 8px; vertical-align: middle; }
+            #c-r { display: inline-block; max-width: 512px; width: 25%; background: orangered; margin: 0 auto; }
+            #c-s.pressed { background: bisque; }
+            #c-e.pressed { background: paleturquoise; }
+            #controls { position: relative; width: 100%; text-align: center; z-index: 100; padding: 8px; box-sizing: border-box; visibility: hidden; }
+            #steps { border-radius: 12px; padding: 16px; display: block; text-align: center; max-width: 512px; margin: 0 auto; background: white; box-sizing: border-box; font-size: 1.5em; }
+            #steps span { font-weight: bold; width: 2em; text-align: right; display: inline-block; margin-bottom: 8px; }
+            input { width: 75%; display: block; margin: 0 auto; }
+            .c { width: 64px; height: 64px; font-size: 32px; text-align: center; padding-top: 12px; text-transform:uppercase; box-sizing: border-box; display: inline-block; transition: 0.1s ease transform,color,background-color; z-index: 100; cursor: pointer; border-radius: 12px; user-select: none; -webkit-user-select: none; }
+            .c.pressed { color: dodgerblue; transform: scale(1.1); border-color: white; }
+            #help { display: none; width: 100vw; max-width: 768px; margin: 0 auto; box-sizing: border-box; padding: 32px; background: white; font-size: 1.5rem; line-height: 1.5; padding-bottom: 0; }
+            #c-d.inactive { opacity: 0.25; }
+            #help.pressed { display: block; }
+            h2 { text-transform: uppercase; opacity: 0.9; color: orange; }
+            a { color: dodgerblue; }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+        <script src="script.js" charset="utf-8"></script>
+    </head>
+    <body>
+        <div id="stats"></div>
+        <div id="easel">
+            <canvas id="output"></canvas>
+            <canvas id="preview"></canvas>
+            <canvas id="sketchpad"></canvas>
+        </div>
+        <div id="progress"><div id="bar"></div></div>
+        <div id="timeline"></div>
+        <div id="help">
+            <h2>What is this?</h2>
+            <p>A tiny neural network (🦖) generates images in your web browser.</p>
+            <ul>
+                <li>️🖍️ to draw guidance</li>
+                <li>️🧼 to erase guidance</li>
+                <li>🎲 to make new random noise</li>
+                <li><input type=range min=1 max=3 value=2 style="width:2.5em;display:inline;"> to control how much time is spent generating</li>
+                <li>🖼️ to download a completed image</li>
+            </ul>
+            <h2>How does it work?</h2>
+            <p>🦖 was <a href="../">trained</a> to denoise noisy input images (specifically - a small number of <a href="https://www.flickr.com/photos/biodivlibrary/albums/72157719450347843">plant illustrations</a>), given some guidance about what each final image looks like.</p>
+            <p>By starting from pure noise, and iteratively mixing in 🦖's denoised predictions to <a href="https://quoteinvestigator.com/2014/06/22/chip-away/">chip away</a> everything that looks like noise, 🦖 can generate new images based on new guidance.</p>
+        </div>
+        <div id="controls">
+            <label id="steps"><span>25</span> 🦖<input type=range min=1 max=100 value=25></input></label>
+            <div style="display: inline-block;">
+                <div id="c-s" class="c tool">️🖍️</div>
+                <div id="c-e" class="c tool">️🧼</div>
+            </div>
+            <div id="c-r" class="c">🎲</div>
+            <div style="display: inline-block;">
+                <a id="c-d" class="c inactive" href="#download">🖼️</a>
+                <div id="c-h" class="c">?</div>
+            </div>
+        </div>
+    </body>
+</html>
