@@ -1,4 +1,13 @@
-content
+# ugh... why don't we have this in history? it's dumb
+content/**/*.jpg
+content/**/*.jpeg
+content/**/*.png
+content/**/*.mp3
+content/**/*.mp4
+content/**/*.onnx
+content/**/*.xcf
+content/**/*.gif
+content/**/*.zip
 *.sh
 *.sw*
 templates
@@ -8,3 +17,16 @@ templates
 *.sketch
 posts/_*
 .DS_Store
+
+posts/priors_for_avs/bayes_filter_demo.js
+posts/cnn_acapella_extraction/all_goes_wrong_*
+posts/game_emulation_via_dnn/*.png
+posts/game_emulation_via_dnn/demo/dreamnet*
+
+posts/game_emulation_via_dnn/demo/onnx.min.js
+posts/game_emulation_via_dnn/demo/ort_to_onnx.js
+posts/game_emulation_via_dnn/demo/otor.js
+posts/game_emulation_via_dnn/diagram_loss_functions_1.jpg
+posts/game_emulation_via_dnn/no_engraving.jpeg
+posts/game_emulation_via_dnn/sd_rendering.jpg
+posts/world_emulation_via_dnn/demo/*.onnx

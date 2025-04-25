@@ -7,6 +7,13 @@
 <language>en</language>
 
 <item>
+<title>World Emulation via Neural Network</title>
+<guid isPermaLink="true">http://madebyoll.in/posts/world_emulation_via_dnn</guid>
+<link>http://madebyoll.in/posts/world_emulation_via_dnn</link>
+<pubDate>Fri, 25 Apr 2025 10:14:49 -0700</pubDate>
+<description></description>
+</item>
+<item>
 <title>Bare-bones Diffusion Models</title>
 <guid isPermaLink="true">http://madebyoll.in/posts/dino_diffusion</guid>
 <link>http://madebyoll.in/posts/dino_diffusion</link>
@@ -18,7 +25,7 @@
 <guid isPermaLink="true">http://madebyoll.in/posts/maple_diffusion</guid>
 <link>http://madebyoll.in/posts/maple_diffusion</link>
 <pubDate>Sun, 09 Oct 2022 09:21:55 -0700</pubDate>
-<description>I ported Stable Diffusion to my phone</description>
+<description></description>
 </item>
 <item>
 <title>Game Emulation via Neural Network</title>

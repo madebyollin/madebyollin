@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>World Emulation via Neural Network</title>
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="alternate" type="application/rss+xml" title="Made by Ollin" href="/rss.xml" />
+    <script src="/js/fix_roundrects.js" async></script>
+    <script src="/js/fix_linebreaks.js" async></script>
+    <script src="/js/fix_post_typography.js" async></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <header>
+            <span class="logo"><a href="/">Ollin Boer Bohan</a></span>
+            <!-- <ul class="nav">
+                <li><a href="/" >Projects</a></li>
+                <li><a href="/posts" class="selected" >Posts</a></li>
+            </ul> -->
+        </header>
+        <main>
+            <a id="world_emulation_via_dnn" class="project" href="/posts/world_emulation_via_dnn" style="background-image:url('/posts/world_emulation_via_dnn/index.jpg');">
+    <h2>World Emulation via Neural Network</h2>
+    <p></p>
+    <div class="posteddate squircle">
+        25 April 2025
+    </div>
+</a>
+<div class="post">
+    <style>
+#demo { transition: 0.1s ease transform; display:inline-block; border: 0; }
+#demo:hover { transform: scale(1.05); }
+.TODO { background: rgb(64, 48, 128); color: rgb(192, 173, 210); padding: 12px 24px; white-space: pre-wrap; font-family: monospace; font-size: 14px; }
+.TODO::before { content: "⚠️ TODO"; font-weight: bold; color: white;display:block; border-bottom: 1px solid rgba(255, 173, 210, 0.25); padding-bottom: 8px; }
+</style>
+
+<p>I turned a forest trail near my apartment into a playable neural world.<br/>
+You can explore that world in your web browser <a href="./demo">by clicking right here</a>:</p>
+<a href="./demo" id="demo"><video playsinline autoplay loop muted>
+    <source src="./neural_world_demo.mp4" type="video/mp4" /></video>
+</a>
+
+<p>By "neural world", I mean that the entire thing is a neural network generating new images based on previous images + controls. There is no level geometry, no code for lighting or shadows, no scripted animation. Just a neural net in a loop.</p>
+
+<img src="inference_diagram.jpg" alt="A diagram illustrating a neural network that consumes noise, controls, and memory, and produces video frames and memory." />
+
+<p>By "in your web browser" I mean this world runs locally, in <em>your</em> web browser. Once the world has loaded, you can continue exploring even in Airplane Mode.</p>
+
+<video playsinline autoplay loop muted><source src="./neural_world_demo_iphone.mp4" type="video/mp4" /></video>
+
+<p>So, why bother creating a world this way? There are some interesting conceptual reasons (I'll get to them later), but my main goal was just to outdo a prior post.</p>
+
+<p>See, <a href="https://x.com/madebyollin/status/1566838643771457536">three years ago</a>, I got a simple two-dimensional video game world to run in-browser by training a neural network to mimic gameplay videos from YouTube.
+</p>
+
+<a href="../game_emulation_via_dnn/demo">
+<video playsinline autoplay loop muted><source src="./pokemon_world.mp4" type="video/mp4" /></video>
+</a>
+
+<p>
+Mimicking a 2D video game world was cute, but ultimately kind of pointless;<br/>
+existing video games already exist and we can already emulate them just fine.
+</p>
+
+<p>
+The wonderful, unique, exciting property of neural worlds is that they can be constructed from any video file,
+not just screen recordings of old video games. <br/>
+My previous post didn't really get this across.
+</p>
+
+<p>So for this post, to demonstrate what makes neural networks truly special,<br/> I wanted to train a neural network on gameplay videos of the actual world.</p>
+
+<h2 id="recording-data">Recording data</h2>
+
+<p>To begin this project, I walked through a forest trail, recording videos with my phone,
+using a customized camera app which also recorded my phone's motion.</p>
+
+<video playsinline autoplay loop muted><source src="./capture_app.mp4" type="video/mp4" /></video>
+
+<p>I collected ~15 minutes of video and motion recordings. I've visualized motion as a "walking" control stick on the left and a "looking" control stick on the right.</p>
+
+<video playsinline autoplay loop muted><source src="./sample_videos.mp4" type="video/mp4" /></video>
+
+<p>
+Back at home, I transferred the recordings to my laptop, and shuffled them into a list of (<code>previous frame, control</code> &rarr; <code>next frame</code>) pairs just like my previous game-emulation dataset.</p>
+</p>
+
+<img src="sample_pairs.jpg" alt="A screenshot of two examples from the dataset, showing the memory and control inputs as well as the corresponding video frame outputs." />
+
+<p>Now, all I needed to do was train a neural network to mimic the behavior of these input&rarr;output pairs. I already had working code from my previous game-emulation project,<br/>
+so I tried rerunning that code to establish a baseline.</p>
+
+<h2 id="training-baselines">Training baselines</h2>
+
+<p>
+Applying my previous game-emulation-via-neural-network recipe to this new dataset produced, regrettably, a sort of interactive forest-flavored soup.
+</p>
+
+<video autoplay playsinline loop muted><source src="./forest_soup_gameplay.mp4" type="video/mp4" /></video>
+
+<p>
+My neural network couldn't predict the actual next frame accurately,
+and it couldn't make up new details fast enough to compensate,
+so the resulting world collapsed even if I gave it a running start by initializing from real video frames:
+</p>
+
+<video autoplay playsinline loop muted><source src="./forest_soup.mp4" type="video/mp4" /></video>
+
+<p>Undaunted, I started work on a new version of the neural world training code.<br/></p>
+
+<h2 id="upgrading-the-training-recipe">Upgrading the training recipe</h2>
+
+<p>To help my network understand real-world video, I made the following upgrades:</p>
+
+<ol>
+    <li><strong>Adding more control information.</strong> I upgraded the "control" network input from simple 2D controls to more-informative 3D (<a href="https://en.wikipedia.org/wiki/Six_degrees_of_freedom">6DoF</a>) controls.</li>
+    <li><strong>Adding more memory.</strong> I upgraded the "memory" network input from a single frame to 32 frames (using lower resolution for the older frames).</li>
+    <li><strong>Adding multiple scales.</strong> I restructured the network to process all inputs across multiple resolutions, instead of a fixed 1/8 resolution.</li>
+</ol>
+
+<img src="network_upgrades.jpg" alt="A before/after diagram of the neural network architecture." />
+
+<p>These upgrades let me stave off soupification enough to get a half-baked demo:</p>
+
+<video autoplay playsinline loop muted><source src="./first_stable_rollouts.mp4" type="video/mp4" /></video>
+
+<p>This was  significant progress. Unfortunately, the world was still pretty melty,<br/> so I started work on a second batch of improvements (more daunted this time).</p>
+
+<h2 id="upgrading-the-training-recipe-more">Upgrading the training recipe more</h2>
+
+<p>This time, I left the inputs/outputs as-is and focused on finding incremental improvements to the training procedure. Here's a mercifully-abbreviated montage:</p>
+
+<video autoplay playsinline loop muted><source src="./improvement_montage.mp4" type="video/mp4" /></video>
+
+<p>The biggest jumps in quality came from:</p>
+
+<ol>
+    <li><strong>Making the network bigger</strong>: I added even more layers of neural network processing, while striving to maintain a somewhat-playable FPS.</li>
+    <li><strong>Picking a better training objective</strong>: I adjusted training to put less emphasis on <a href="https://en.wikipedia.org/wiki/Mean_absolute_error">detail prediction</a> and more emphasis on <a href="https://en.wikipedia.org/wiki/Generative_adversarial_network">detail generation</a>.</li>
+    <li><strong>Training longer</strong>: I trained the network longer on a selected subset of video frames to try and eke out the highest-quality results.</li>
+</ol>
+
+<p>
+Here's a summary of the final forest world recipe:
+</p>
+
+<ul>
+    <li><strong>Dataset</strong>: 22,814 frames (30FPS SDR video, timestamped ARKit poses) captured at Marymoor Park Audobon Bird Loop with iPhone 13 Pro.</li>
+    <li><strong>Inputs</strong>:
+        3x4-element relative camera pose, 2-element gravity-relative roll/pitch, relative time delta, valid/augmented bit,<br/>
+        4 past-frame TCHW memory buffers (32&times;3&times;3&times;4, 16&times;3&times;12&times;16, 8&times;3&times;48&times;64, 4&times;3&times;192&times;256),<br/>
+        4 U(0, 1) single-channel noise tensors at each spatial scale (like StyleGAN).</li>
+    </li>
+    <li><strong>Model</strong>: Asymmetric (decoder-heavy) 4-scale UNet with reduced-size full-resolution decoder block. <br/>~5M trainable parameters, ~1 GFLOP per generated 192&times;256 frame.
+        <a href="https://netron.app/?url=https://madebyoll.in/posts/world_emulation_via_dnn/demo/model.onnx"><img src="tiny_netron_screenshot.png" alt="A screenshot of Netron's model diagram." /></a>
+    </li>
+    <li><strong>Training</strong>: AdamW constant LR + SWA, L1 + adversarial loss, stability fixes from the game-emulation recipe, around ~100 GPU-hours (~$100 USD).</li>
+    <li><strong>Inference</strong>: Control-conditioned sequential autoregression with 60FPS cap, preprocessing in JS, network in ONNX Runtime Web's WebGL backend.</li>
+</ul>
+
+
+<p>
+Whew. So, let's return to the original question: <br/> why bother? Why go through so much work to get a low-resolution neural world of a single forest trail?
+Why not make a stabler, higher-resolution demo using traditional video game techniques?
+</p>
+
+<h2 id="two-ways-to-create-worlds">Two ways to create worlds</h2>
+
+<p>
+Traditional game worlds are made like paintings. You sit in front of an empty canvas and layer <a href="https://www.youtube.com/watch?v=BFld4EBO2RE">keystroke upon keystroke</a> until you get something beautiful. Every lifelike detail in a traditional game is only there because <a href="https://www.youtube.com/watch?v=9XWxsJKpYYI">some artist painted it in</a>.
+</p>
+
+<p>
+Neural worlds are made rather differently. <br /> To create a neural world of a forest, <br />
+I walked into an actual forest and pressed "record" on the device in my hand. <br/>
+Every lifelike detail in the final world is only there because my phone recorded it.
+</p>
+
+<p>
+So, if traditional game worlds are paintings, neural worlds are photographs.<br/>
+Information flows from sensor to screen without passing through human hands.
+</p>
+
+<img src="information_flow.jpg" alt="A doodle showing how information flows in painting-style worlds vs. photo-style worlds." />
+
+<p>
+Admittedly, as of this post, neural worlds resemble <em>very early</em> photographs.<br/>
+Early cameras <a href="https://youtu.be/wbbH77rYaa8?si=MH-xjGvK9wIAB-sK&t=366">barely worked</a>, and the photos they took were not lifelike at all.
+</p>
+
+<a href="https://collectionscaptured.ncl.ac.uk/digital/collection/p21051coll22/id/4/">
+<img src="early_photo.jpg" alt="An early daguerrotype." />
+</a>
+
+<p>
+The exciting part was that cameras reduced realistic-image-creation from an artistic problem to a technological one.<br/>
+As technology improved, cameras did too, and photographs grew ever more faithful to reality while paintings did not.
+</p>
+
+<img src="current_photo.jpg" alt="A modern iPhone photograph." />
+
+<p>
+I think that neural worlds will improve in fidelity just like photographs did.
+In time, neural worlds will have trees that bend in the wind, lilypads that bob in the rain, birds that sing to each other. <br/>
+Automatically, because the real world has those things and a tool can record them. Not because an artist paints them in.
+</p>
+
+<p>
+I think the tools for creating neural worlds can also, eventually, be just as convenient as today's cameras.
+In the same way that a modern digital camera creates images or videos at the press of a button,
+we could have a tool to create worlds.
+</p>
+
+<p>If neural worlds become as lifelike, cheap, and composable as photos are today,<br/> narrative arrangements of neural worlds could be their own creative medium,<br/> as distinct from today's video games as photographs were from paintings.
+</p>
+
+<p>
+I think that would be very exciting indeed!
+</p>
+
+<hr />
+
+<p>Neural networks which model the world are often called "world models" and many smart people have worked on them; a classic example is Comma's <a href="https://arxiv.org/pdf/1608.01230">"Learning a Driving Simulator"</a>, and some more recent examples are OpenDriveLabs' <a href="https://github.com/OpenDriveLab/Vista">Vista</a> or Wayve's <a href="https://wayve.ai/thinking/gaia-2/">GAIA-2</a>. If you're a programmer interested in training your own world models, I recommend looking at <a href="https://diamond-wm.github.io"/>DIAMOND</a> or <a href="https://github.com/buoyancy99/diffusion-forcing">Diffusion Forcing</a>.</p>
+
+<p>Compared to serious "Foundation World Models" with billions of parameters,<br/> the GAN-based WM featured in this post is a toy (and a fairly brittle one at that).<br/> Still, it would be fun to improve the recipe further and make a few more worlds.<br/> If you know a place near Seattle that would be interesting to capture, <a href="https://x.com/madebyollin">LMK</a>.</p>
+</div>
+        </main>
+        <footer>
+            <a href="https://www.github.com/madebyollin">GitHub</a> /
+            <a rel="me" href="https://sigmoid.social/@madebyollin">Mastodon</a> /
+            <a href="https://www.twitter.com/madebyollin">Twitter</a> /
+            <a href="mailto:madebyollin@gmail.com">Email</a>
+        </footer>
+    </div>
+</body>
+
+</html>

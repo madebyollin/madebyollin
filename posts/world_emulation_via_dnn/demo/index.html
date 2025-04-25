@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <title>Neural World Player</title>
+        <style>
+            * { touch-action: manipulation; user-select: none; -webkit-touch-callout: none; -webkit-user-select: none; }
+            body, html { padding: 0; margin: 0; background: black; width: 100vw; font-family: sans-serif; }
+            canvas { display: block; margin: 48px auto; width: 100vw; height: auto; image-rendering: pixelated; }
+            @media screen and (min-aspect-ratio: 4/3) { canvas { width: auto; height: 100vh; margin: 0 auto; } }
+            .overlay:active { color: black; background: white; }
+            .overlay {
+                position: absolute; font-size: 12px; color: rgba(255, 255, 255, 0.75); box-sizing: border-box; z-index: 100; font-weight: bold; background: rgba(20,20,20,0.25);
+                -webkit-backdrop-filter: brightness(80%) blur(16px) saturate(200%); backdrop-filter: brightness(80%) blur(16px) saturate(200%);
+                font-variant-numeric: tabular-nums; cursor: pointer; padding: 4px 12px; border-radius: 16px; display: inline-block;
+            }
+            #stats { top: 8px; right: 72px; }
+            #reset { top: 8px; right: 8px; }
+            #backlink { top: 8px; left: 8px; }
+            #backlink a { color: currentColor; text-decoration: none; }
+            h2 { text-transform: uppercase; opacity: 0.9; color: orange; }
+            p { opacity: 0.8; font-size: 32px; line-height: 1.5; color: white; padding-right: 64px; }
+            a { color: dodgerblue; }
+        </style>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script> -->
+        <script src="ort.webgl.min.js"></script>
+        <script src="nwr.js"></script>
+        <script src="strafewafel-nw.js"></script>
+        <script src="script.js" charset="utf-8"></script>
+    </head>
+    <body>
+		<main>
+            <div class="overlay" id="backlink"><a href="../"><span style='opacity:0.5'>&larr;</span> madebyoll.in</a></div>
+			<div class="overlay" id="reset">Reset</div>
+			<div class="overlay" id="stats">0 FPS</div>
+			<canvas></canvas>
+		</main>
+    </body>
+</html>
