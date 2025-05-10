@@ -774,15 +774,29 @@ function Strafewafel() {
             // (this is based on, more or less, the width of my laptop screen :P)
             // also it's then too slow if you zoom out. pointer locked control is such a mess.
             const screenToNominalPixels = 1536 / rect.width;
+            const timestamp_ms = performance.now(); // ms
             let ctrlY = 0.0;
             let ctrlX = 0.0;
-            const timestamp_ms = performance.now(); // ms
+            // okay so this part is like super duper cursed
+            // in order to get precise controls we need to compute the pointer-locked velocity
+            // unfortunately, we only get move events
+            // the move events are a mess across browsers
+            // - different units
+            // - different time deltas and precisions
+            //     - chrome in particular occasionally gives you nearly-identical events
+            // in order to, like, actually solve this we need some browser-aware intermediate tracking layer
+            // that maintains a smooth estimate of pointer-locked move rate...
+            // which is way too much work
+            // so for now we're just gonna hardcode some chrome-specific fixes and leave it
+            let prevTimestamp_ms = null;
+            let deltaT_s = null;
             if (uiState.screen.pressed["pointerlock"])
             {
-                const prevTimestamp_ms = uiState.screen.pressed["pointerlock"].timestamp_ms;
-                // browser sometimes gives multiple move events per ms (impressive!)
-                // so we add 0.1 here as a lazy hack to avoid NaNs when computing the move rate
-                const deltaT_s = (0.1 + timestamp_ms - prevTimestamp_ms) / 1000.0;
+                prevTimestamp_ms = uiState.screen.pressed["pointerlock"].timestamp_ms;
+                deltaT_s = (timestamp_ms - prevTimestamp_ms) / 1000.0;
+                if (deltaT_s < 1/60) {
+                    return;
+                }
                 ctrlY = -ev.movementX / deltaT_s * config.pointerLockedRadiansPerNominalPixel * screenToNominalPixels;
                 ctrlX = -ev.movementY / deltaT_s * config.pointerLockedRadiansPerNominalPixel * screenToNominalPixels;
                 if (config.scalePointerLockedMovementByDevicePixelRatio) {
